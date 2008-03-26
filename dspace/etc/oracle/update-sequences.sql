@@ -1,9 +1,9 @@
 --
 -- update-sequences.sql
 --
--- Version: $Revision$
+-- Version: $Revision: 2248 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2007-10-05 11:01:40 -0500 (Fri, 05 Oct 2007) $
 --
 -- Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 -- Institute of Technology.  All rights reserved.

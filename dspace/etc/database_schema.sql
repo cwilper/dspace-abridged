@@ -1,9 +1,9 @@
 --
 -- database_schema.sql
 --
--- Version: $Revision$
+-- Version: $Revision: 2793 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2008-03-07 11:33:32 -0600 (Fri, 07 Mar 2008) $
 --
 -- Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 -- Institute of Technology.  All rights reserved.

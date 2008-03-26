@@ -1,9 +1,9 @@
 --
 -- clean-database.sql
 --
--- Version: $Revision$
+-- Version: $Revision: 2691 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2008-02-19 18:31:24 -0600 (Tue, 19 Feb 2008) $
 --
 -- Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 -- Institute of Technology.  All rights reserved.

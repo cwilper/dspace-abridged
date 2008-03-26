@@ -1,9 +1,9 @@
 --
 -- database_schema.sql (ORACLE version!)
 --
--- Version: $Revision$
+-- Version: $Revision: 2817 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2008-03-12 07:08:19 -0500 (Wed, 12 Mar 2008) $
 --
 -- Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 -- Institute of Technology.  All rights reserved.
