@@ -10,7 +10,7 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-xmlui</artifactId>
-      <version>1.5.0</version>
+      <version>1.5.1</version>
    </parent>
 
    <repositories>
@@ -30,27 +30,10 @@
       </repository>
    </repositories>
 
-   <pluginRepositories>
-      <pluginRepository>
-         <id>maven.dspace.org/snapshot</id>
-         <name>DSpace Maven Repository</name>
-         <url>http://maven.dspace.org/snapshot</url>
-         <releases>
-            <enabled>false</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-         </releases>
-         <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-         </snapshots>
-      </pluginRepository>
-   </pluginRepositories>
-
    <scm>
-      <connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5</connection>
-      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace-xmlui/dspace-xmlui-wing</developerConnection>
-      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5/dspace-xmlui/dspace-xmlui-wing</url>
+      <connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1</connection>
+      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace-xmlui/dspace-xmlui-wing</developerConnection>
+      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5_1/dspace-xmlui/dspace-xmlui-wing</url>
    </scm>
 
    <dependencies>
@@ -86,9 +69,9 @@
          <version>4.3.1</version>
       </dependency>
       <dependency>
-         <groupId>avalon-logkit</groupId>
+         <groupId>org.apache.avalon.logkit</groupId>
          <artifactId>avalon-logkit</artifactId>
-         <version>2.1</version>
+         <version>2.2.1</version>
          <exclusions>
             <exclusion>
                <groupId>geronimo-spec</groupId>

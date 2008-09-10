@@ -66,6 +66,7 @@ import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.core.ConfigurationManager;
 import org.xml.sax.SAXException;
 
 /**
@@ -85,18 +86,6 @@ public class Navigation extends AbstractDSpaceTransformer implements CacheablePr
     
     private static final Message T_communities_and_collections =
         message("xmlui.ArtifactBrowser.Navigation.communities_and_collections");
-    
-    private static final Message T_browse_titles =
-        message("xmlui.ArtifactBrowser.Navigation.browse_titles");
-    
-    private static final Message T_browse_authors = 
-        message("xmlui.ArtifactBrowser.Navigation.browse_authors");
-    
-    private static final Message T_browse_subjects = 
-        message("xmlui.ArtifactBrowser.Navigation.browse_subjects");
-    
-    private static final Message T_browse_dates = 
-        message("xmlui.ArtifactBrowser.Navigation.browse_dates");
     
     private static final Message T_head_this_collection =
         message("xmlui.ArtifactBrowser.Navigation.head_this_collection");
@@ -213,6 +202,13 @@ public class Navigation extends AbstractDSpaceTransformer implements CacheablePr
         pageMeta.addMetadata("request","serverPort").addContent(request.getServerPort());
         pageMeta.addMetadata("request","serverName").addContent(request.getServerName());
         pageMeta.addMetadata("request","URI").addContent(request.getSitemapURI());
+        
+        String analyticsKey = ConfigurationManager.getProperty("xmlui.google.analytics.key");
+        if (analyticsKey != null && analyticsKey.length() > 0)
+        {
+        	analyticsKey = analyticsKey.trim();
+        	pageMeta.addMetadata("google","analytics").addContent(analyticsKey);
+        }
         
         // Add metadata for quick searches:
         pageMeta.addMetadata("search", "simpleURL").addContent(

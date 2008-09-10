@@ -253,14 +253,48 @@ public class EPerson extends DSpaceObject
     		throws SQLException
 	{
 		String params = "%"+query.toLowerCase()+"%";
-		String dbquery = "SELECT * FROM eperson WHERE eperson_id = ? OR " + 
-			"firstname ILIKE ? OR lastname ILIKE ? OR email ILIKE ? ORDER BY lastname, firstname ASC ";
-		
-		if (offset >= 0 && limit >0) {
-			dbquery += "LIMIT " + limit + " OFFSET " + offset;
-		}
-		
-		// When checking against the eperson-id, make sure the query can be made into a number
+        StringBuffer queryBuf = new StringBuffer();
+        queryBuf.append("SELECT * FROM eperson WHERE eperson_id = ? OR ");
+        queryBuf.append("LOWER(firstname) LIKE LOWER(?) OR LOWER(lastname) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) ORDER BY lastname, firstname ASC ");
+
+        // Add offset and limit restrictions - Oracle requires special code
+        if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
+        {
+            // First prepare the query to generate row numbers
+            if (limit > 0 || offset > 0)
+            {
+                queryBuf.insert(0, "SELECT /*+ FIRST_ROWS(n) */ rec.*, ROWNUM rnum  FROM (");
+                queryBuf.append(") ");
+            }
+
+            // Restrict the number of rows returned based on the limit
+            if (limit > 0)
+            {
+                queryBuf.append("rec WHERE rownum<=? ");
+                // If we also have an offset, then convert the limit into the maximum row number
+                if (offset > 0)
+                    limit += offset;
+            }
+
+            // Return only the records after the specified offset (row number)
+            if (offset > 0)
+            {
+                queryBuf.insert(0, "SELECT * FROM (");
+                queryBuf.append(") WHERE rnum>?");
+            }
+        }
+        else
+        {
+            if (limit > 0)
+                queryBuf.append(" LIMIT ? ");
+
+            if (offset > 0)
+                queryBuf.append(" OFFSET ? ");
+        }
+
+        String dbquery = queryBuf.toString();
+
+        // When checking against the eperson-id, make sure the query can be made into a number
 		Integer int_param;
 		try {
 			int_param = Integer.valueOf(query);
@@ -268,33 +302,49 @@ public class EPerson extends DSpaceObject
 		catch (NumberFormatException e) {
 			int_param = new Integer(-1);
 		}
-		
-		// Get all the epeople that match the query
-		TableRowIterator rows = DatabaseManager.query(context, dbquery, new Object[] {int_param,params,params,params});
-		
-		List epeopleRows = rows.toList();
-		EPerson[] epeople = new EPerson[epeopleRows.size()];
-		
-		for (int i = 0; i < epeopleRows.size(); i++)
-		{
-		    TableRow row = (TableRow) epeopleRows.get(i);
-		
-		    // First check the cache
-		    EPerson fromCache = (EPerson) context.fromCache(EPerson.class, row
-		            .getIntColumn("eperson_id"));
-		
-		    if (fromCache != null)
-		    {
-		        epeople[i] = fromCache;
-		    }
-		    else
-		    {
-		        epeople[i] = new EPerson(context, row);
-		    }
-		}
-		
-		return epeople;
-	}
+
+        // Create the parameter array, including limit and offset if part of the query
+        Object[] paramArr = new Object[] {int_param,params,params,params};
+        if (limit > 0 && offset > 0)
+            paramArr = new Object[] {int_param,params,params,params,limit,offset};
+        else if (limit > 0)
+            paramArr = new Object[] {int_param,params,params,params,limit};
+        else if (offset > 0)
+            paramArr = new Object[] {int_param,params,params,params,offset};
+
+        // Get all the epeople that match the query
+		TableRowIterator rows = DatabaseManager.query(context, dbquery, paramArr);
+		try
+        {
+            List epeopleRows = rows.toList();
+            EPerson[] epeople = new EPerson[epeopleRows.size()];
+
+            for (int i = 0; i < epeopleRows.size(); i++)
+            {
+                TableRow row = (TableRow) epeopleRows.get(i);
+
+                // First check the cache
+                EPerson fromCache = (EPerson) context.fromCache(EPerson.class, row
+                        .getIntColumn("eperson_id"));
+
+                if (fromCache != null)
+                {
+                    epeople[i] = fromCache;
+                }
+                else
+                {
+                    epeople[i] = new EPerson(context, row);
+                }
+            }
+
+            return epeople;
+        }
+        finally
+        {
+            if (rows != null)
+                rows.close();
+        }
+    }
 
     /**
      * Returns the total number of epeople returned by a specific query, without the overhead 
@@ -324,18 +374,18 @@ public class EPerson extends DSpaceObject
 		
 		// Get all the epeople that match the query
 		TableRow row = DatabaseManager.querySingle(context,
-		        "SELECT count(*) as count FROM eperson WHERE eperson_id = ? OR " + 
-		        "firstname ILIKE ? OR lastname ILIKE ? OR email ILIKE ?",
+		        "SELECT count(*) as epcount FROM eperson WHERE eperson_id = ? OR " +
+		        "LOWER(firstname) LIKE LOWER(?) OR LOWER(lastname) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)",
 		        new Object[] {int_param,dbquery,dbquery,dbquery});
 				
 		// use getIntColumn for Oracle count data
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
         {
-            count = new Long(row.getIntColumn("count"));              
+            count = new Long(row.getIntColumn("epcount"));
         }
         else  //getLongColumn works for postgres
         {
-            count = new Long(row.getLongColumn("count"));
+            count = new Long(row.getLongColumn("epcount"));
         }
         
 		return count.intValue();
@@ -385,29 +435,37 @@ public class EPerson extends DSpaceObject
         TableRowIterator rows = DatabaseManager.query(context,
                 "SELECT * FROM eperson ORDER BY "+s);
 
-        List epeopleRows = rows.toList();
-
-        EPerson[] epeople = new EPerson[epeopleRows.size()];
-
-        for (int i = 0; i < epeopleRows.size(); i++)
+        try
         {
-            TableRow row = (TableRow) epeopleRows.get(i);
+            List epeopleRows = rows.toList();
 
-            // First check the cache
-            EPerson fromCache = (EPerson) context.fromCache(EPerson.class, row
-                    .getIntColumn("eperson_id"));
+            EPerson[] epeople = new EPerson[epeopleRows.size()];
 
-            if (fromCache != null)
+            for (int i = 0; i < epeopleRows.size(); i++)
             {
-                epeople[i] = fromCache;
+                TableRow row = (TableRow) epeopleRows.get(i);
+
+                // First check the cache
+                EPerson fromCache = (EPerson) context.fromCache(EPerson.class, row
+                        .getIntColumn("eperson_id"));
+
+                if (fromCache != null)
+                {
+                    epeople[i] = fromCache;
+                }
+                else
+                {
+                    epeople[i] = new EPerson(context, row);
+                }
             }
-            else
-            {
-                epeople[i] = new EPerson(context, row);
-            }
+
+            return epeople;
         }
-
-        return epeople;
+        finally
+        {
+            if (rows != null)
+                rows.close();
+        }
     }
 
     /**
@@ -865,36 +923,57 @@ public class EPerson extends DSpaceObject
                 "SELECT * from item where submitter_id= ? ",
                 getID());
 
-        if (tri.hasNext())
+        try
         {
-            tableList.add("item");
+            if (tri.hasNext())
+            {
+                tableList.add("item");
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
         }
 
-        tri.close();
-        
         // check for eperson in workflowitem table
         tri = DatabaseManager.query(myContext,
                 "SELECT * from workflowitem where owner= ? ",
                 getID());
 
-        if (tri.hasNext())
+        try
         {
-            tableList.add("workflowitem");
+            if (tri.hasNext())
+            {
+                tableList.add("workflowitem");
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
         }
 
-        tri.close();
-        
         // check for eperson in tasklistitem table
         tri = DatabaseManager.query(myContext,
                 "SELECT * from tasklistitem where eperson_id= ? ",
                 getID());
 
-        if (tri.hasNext())
+        try
         {
-            tableList.add("tasklistitem");
+            if (tri.hasNext())
+            {
+                tableList.add("tasklistitem");
+            }
         }
-
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
         
         // the list of tables can be used to construct an error message
         // explaining to the user why the eperson cannot be deleted.

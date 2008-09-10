@@ -143,39 +143,46 @@ public class Item extends DSpaceObject
         // Get Dublin Core metadata
         TableRowIterator tri = retrieveMetadata();
 
-        while (tri.hasNext())
+        try
         {
-            TableRow resultRow = tri.next();
-
-            // Get the associated metadata field and schema information
-            int fieldID = resultRow.getIntColumn("metadata_field_id");
-            MetadataField field = MetadataField.find(context, fieldID);
-
-            if (field == null)
+            while (tri.hasNext())
             {
-                log.error("Loading item - cannot found metadata field "
-                        + fieldID);
+                TableRow resultRow = tri.next();
+
+                // Get the associated metadata field and schema information
+                int fieldID = resultRow.getIntColumn("metadata_field_id");
+                MetadataField field = MetadataField.find(context, fieldID);
+
+                if (field == null)
+                {
+                    log.error("Loading item - cannot found metadata field "
+                            + fieldID);
+                }
+                else
+                {
+                    MetadataSchema schema = MetadataSchema.find(
+                            context, field.getSchemaID());
+
+                    // Make a DCValue object
+                    DCValue dcv = new DCValue();
+                        dcv.element = field.getElement();
+                        dcv.qualifier = field.getQualifier();
+                    dcv.value = resultRow.getStringColumn("text_value");
+                    dcv.language = resultRow.getStringColumn("text_lang");
+                        //dcv.namespace = schema.getNamespace();
+                        dcv.schema = schema.getName();
+
+                    // Add it to the list
+                    dublinCore.add(dcv);
+                }
             }
-            else
-            {
-                MetadataSchema schema = MetadataSchema.find(
-                        context, field.getSchemaID());
-
-            // Make a DCValue object
-            DCValue dcv = new DCValue();
-                dcv.element = field.getElement();
-                dcv.qualifier = field.getQualifier();
-            dcv.value = resultRow.getStringColumn("text_value");
-            dcv.language = resultRow.getStringColumn("text_lang");
-                //dcv.namespace = schema.getNamespace();
-                dcv.schema = schema.getName();
-
-            // Add it to the list
-            dublinCore.add(dcv);
         }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
         }
-        // close the TableRowIterator to free up resources
-        tri.close();
 
         // Get our Handle if any
         handle = HandleManager.findHandle(context, this);
@@ -918,25 +925,32 @@ public class Item extends DSpaceObject
                         "collection2item.item_id= ? ",
                         itemRow.getIntColumn("item_id"));
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
-
-            // First check the cache
-            Collection fromCache = (Collection) ourContext.fromCache(
-                    Collection.class, row.getIntColumn("collection_id"));
-
-            if (fromCache != null)
+            while (tri.hasNext())
             {
-                collections.add(fromCache);
-            }
-            else
-            {
-                collections.add(new Collection(ourContext, row));
+                TableRow row = tri.next();
+
+                // First check the cache
+                Collection fromCache = (Collection) ourContext.fromCache(
+                        Collection.class, row.getIntColumn("collection_id"));
+
+                if (fromCache != null)
+                {
+                    collections.add(fromCache);
+                }
+                else
+                {
+                    collections.add(new Collection(ourContext, row));
+                }
             }
         }
-        // close the TableRowIterator to free up resources
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         Collection[] collectionArray = new Collection[collections.size()];
         collectionArray = (Collection[]) collections.toArray(collectionArray);
@@ -963,31 +977,38 @@ public class Item extends DSpaceObject
                         "AND community2item.item_id= ? ",
                         itemRow.getIntColumn("item_id"));
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
-
-            // First check the cache
-            Community owner = (Community) ourContext.fromCache(Community.class,
-                    row.getIntColumn("community_id"));
-
-            if (owner == null)
+            while (tri.hasNext())
             {
-                owner = new Community(ourContext, row);
-            }
+                TableRow row = tri.next();
 
-            communities.add(owner);
+                // First check the cache
+                Community owner = (Community) ourContext.fromCache(Community.class,
+                        row.getIntColumn("community_id"));
 
-            // now add any parent communities
-            Community[] parents = owner.getAllParents();
+                if (owner == null)
+                {
+                    owner = new Community(ourContext, row);
+                }
 
-            for (int i = 0; i < parents.length; i++)
-            {
-                communities.add(parents[i]);
+                communities.add(owner);
+
+                // now add any parent communities
+                Community[] parents = owner.getAllParents();
+
+                for (int i = 0; i < parents.length; i++)
+                {
+                    communities.add(parents[i]);
+                }
             }
         }
-        // close the TableRowIterator to free up resources
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         Community[] communityArray = new Community[communities.size()];
         communityArray = (Community[]) communities.toArray(communityArray);
@@ -1012,25 +1033,32 @@ public class Item extends DSpaceObject
     					"item2bundle.item_id= ? ",
                         itemRow.getIntColumn("item_id"));
 
-    		while (tri.hasNext())
-    		{
-    			TableRow r = tri.next();
+            try
+            {
+                while (tri.hasNext())
+                {
+                    TableRow r = tri.next();
 
-    			// First check the cache
-    			Bundle fromCache = (Bundle) ourContext.fromCache(Bundle.class,
-    										r.getIntColumn("bundle_id"));
+                    // First check the cache
+                    Bundle fromCache = (Bundle) ourContext.fromCache(Bundle.class,
+                                                r.getIntColumn("bundle_id"));
 
-    			if (fromCache != null)
-    			{
-    				bundles.add(fromCache);
-    			}
-    			else
-    			{
-    				bundles.add(new Bundle(ourContext, r));
-    			}
-    		}
-    		// close the TableRowIterator to free up resources
-    		tri.close();
+                    if (fromCache != null)
+                    {
+                        bundles.add(fromCache);
+                    }
+                    else
+                    {
+                        bundles.add(new Bundle(ourContext, r));
+                    }
+                }
+            }
+            finally
+            {
+                // close the TableRowIterator to free up resources
+                if (tri != null)
+                    tri.close();
+            }
     	}
         
         Bundle[] bundleArray = new Bundle[bundles.size()];
@@ -1184,25 +1212,32 @@ public class Item extends DSpaceObject
                 "SELECT * FROM item2bundle WHERE bundle_id= ? ",
                 b.getID());
 
-        if (!tri.hasNext())
+        try
         {
-            //make the right to remove the bundle explicit because the implicit
-            // relation
-            //has been removed. This only has to concern the currentUser
-            // because
-            //he started the removal process and he will end it too.
-            //also add right to remove from the bundle to remove it's
-            // bitstreams.
-            AuthorizeManager.addPolicy(ourContext, b, Constants.DELETE,
-                    ourContext.getCurrentUser());
-            AuthorizeManager.addPolicy(ourContext, b, Constants.REMOVE,
-                    ourContext.getCurrentUser());
+            if (!tri.hasNext())
+            {
+                //make the right to remove the bundle explicit because the implicit
+                // relation
+                //has been removed. This only has to concern the currentUser
+                // because
+                //he started the removal process and he will end it too.
+                //also add right to remove from the bundle to remove it's
+                // bitstreams.
+                AuthorizeManager.addPolicy(ourContext, b, Constants.DELETE,
+                        ourContext.getCurrentUser());
+                AuthorizeManager.addPolicy(ourContext, b, Constants.REMOVE,
+                        ourContext.getCurrentUser());
 
-            // The bundle is an orphan, delete it
-            b.delete();
+                // The bundle is an orphan, delete it
+                b.delete();
+            }
         }
-        // close the TableRowIterator to free up resources
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
     }
 
     /**
@@ -1524,71 +1559,78 @@ public class Item extends DSpaceObject
             TableRowIterator tri = retrieveMetadata();
             if (tri != null)
             {
-                while (tri.hasNext())
+                try
                 {
-                    TableRow tr = tri.next();
-                    // Assume that we will remove this row, unless we get a match
-                    boolean removeRow = true;
-
-                    // Go through the in-memory metadata, unless we've already decided to keep this row
-                    for (int dcIdx = 0; dcIdx < dublinCore.size() && removeRow; dcIdx++)
+                    while (tri.hasNext())
                     {
-                        // Only process if this metadata has not already been matched to something in the DB
-                        if (!storedDC[dcIdx])
+                        TableRow tr = tri.next();
+                        // Assume that we will remove this row, unless we get a match
+                        boolean removeRow = true;
+
+                        // Go through the in-memory metadata, unless we've already decided to keep this row
+                        for (int dcIdx = 0; dcIdx < dublinCore.size() && removeRow; dcIdx++)
                         {
-                            boolean matched = true;
-                            DCValue dcv   = dublinCore.get(dcIdx);
-
-                            // Check the metadata field is the same
-                            if (matched && dcFields[dcIdx].getFieldID() != tr.getIntColumn("metadata_field_id"))
-                                matched = false;
-
-                            // Check the place is the same
-                            if (matched && placeNum[dcIdx] != tr.getIntColumn("place"))
-                                matched = false;
-
-                            // Check the text is the same
-                            if (matched)
+                            // Only process if this metadata has not already been matched to something in the DB
+                            if (!storedDC[dcIdx])
                             {
-                                String text = tr.getStringColumn("text_value");
-                                if (dcv.value == null && text == null)
-                                    matched = true;
-                                else if (dcv.value != null && dcv.value.equals(text))
-                                    matched = true;
-                                else
+                                boolean matched = true;
+                                DCValue dcv   = dublinCore.get(dcIdx);
+
+                                // Check the metadata field is the same
+                                if (matched && dcFields[dcIdx].getFieldID() != tr.getIntColumn("metadata_field_id"))
                                     matched = false;
-                            }
 
-                            // Check the language is the same
-                            if (matched)
-                            {
-                                String lang = tr.getStringColumn("text_lang");
-                                if (dcv.language == null && lang == null)
-                                    matched = true;
-                                else if (dcv.language != null && dcv.language.equals(lang))
-                                    matched = true;
-                                else
+                                // Check the place is the same
+                                if (matched && placeNum[dcIdx] != tr.getIntColumn("place"))
                                     matched = false;
-                            }
 
-                            // If the db record is identical to the in memory values
-                            if (matched)
-                            {
-                                // Flag that the metadata is already in the DB
-                                storedDC[dcIdx] = true;
+                                // Check the text is the same
+                                if (matched)
+                                {
+                                    String text = tr.getStringColumn("text_value");
+                                    if (dcv.value == null && text == null)
+                                        matched = true;
+                                    else if (dcv.value != null && dcv.value.equals(text))
+                                        matched = true;
+                                    else
+                                        matched = false;
+                                }
 
-                                // Flag that we are not going to remove the row
-                                removeRow = false;
+                                // Check the language is the same
+                                if (matched)
+                                {
+                                    String lang = tr.getStringColumn("text_lang");
+                                    if (dcv.language == null && lang == null)
+                                        matched = true;
+                                    else if (dcv.language != null && dcv.language.equals(lang))
+                                        matched = true;
+                                    else
+                                        matched = false;
+                                }
+
+                                // If the db record is identical to the in memory values
+                                if (matched)
+                                {
+                                    // Flag that the metadata is already in the DB
+                                    storedDC[dcIdx] = true;
+
+                                    // Flag that we are not going to remove the row
+                                    removeRow = false;
+                                }
                             }
                         }
-                    }
 
-                    // If after processing all the metadata values, we didn't find a match
-                    // delete this row from the DB
-                    if (removeRow)
-                    {
-                        DatabaseManager.delete(ourContext, tr);
+                        // If after processing all the metadata values, we didn't find a match
+                        // delete this row from the DB
+                        if (removeRow)
+                        {
+                            DatabaseManager.delete(ourContext, tr);
+                        }
                     }
+                }
+                finally
+                {
+                    tri.close();
                 }
             }
 
@@ -1830,7 +1872,16 @@ public class Item extends DSpaceObject
 
         // remove all of our authorization policies
         AuthorizeManager.removeAllPolicies(ourContext, this);
-
+        
+        // Remove any Handle
+        // FIXME: HandleManager should provide a way of doing this. 
+        // Plus, deleting a Handle may have ramifications
+        // that need considering.
+        DatabaseManager.updateQuery(ourContext,
+                "DELETE FROM handle WHERE resource_type_id= ? " +
+                "AND resource_id= ? ",
+                Constants.ITEM,getID());
+        
         // Finally remove item row
         DatabaseManager.delete(ourContext, itemRow);
     }
@@ -2090,14 +2141,27 @@ public class Item extends DSpaceObject
      */
     public void move (Collection from, Collection to) throws SQLException, AuthorizeException, IOException 
     {
-    	if (isOwningCollection(from))
+        // Move the Item from one Collection to the other
+        to.addItem(this);
+        from.removeItem(this);
+
+        // If we are moving from the owning collection, update that too
+        if (isOwningCollection(from))
     	{
     		setOwningCollection(to);
     		update();
     	}
-    	
-    	to.addItem(this);
-    	from.removeItem(this);
+        else
+        {
+            // Although we haven't actually updated anything within the item
+            // we'll tell the event system that it has, so that any consumers that
+            // care about the structure of the repository can take account of the move
+
+            // Note that updating the owning collection above will have the same effect,
+            // so we only do this here if the owning collection hasn't changed.
+            
+            ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
+        }
     }
     
     /**

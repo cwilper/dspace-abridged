@@ -162,13 +162,23 @@ public class DatabaseManager
         }
         
         PreparedStatement statement = context.getDBConnection().prepareStatement(query);
-        loadParameters(statement,parameters);
-        
-        TableRowIterator retTRI = new TableRowIterator(statement.executeQuery(),
-                canonicalize(table));
+        try
+        {
+            loadParameters(statement,parameters);
 
-        retTRI.setStatement(statement);
-        return retTRI;
+            TableRowIterator retTRI = new TableRowIterator(statement.executeQuery(),
+                    canonicalize(table));
+
+            retTRI.setStatement(statement);
+            return retTRI;
+        }
+        catch (SQLException sqle)
+        {
+            if (statement != null)
+                try { statement.close(); } catch (SQLException s) { }
+
+            throw sqle;
+        }
     }
     
     /**
@@ -204,13 +214,22 @@ public class DatabaseManager
         }
 
         PreparedStatement statement = context.getDBConnection().prepareStatement(query);
-        loadParameters(statement,parameters);
-        
-        TableRowIterator retTRI = new TableRowIterator(statement.executeQuery());
+        try
+        {
+            loadParameters(statement,parameters);
 
-        
-        retTRI.setStatement(statement);
-        return retTRI;
+            TableRowIterator retTRI = new TableRowIterator(statement.executeQuery());
+
+            retTRI.setStatement(statement);
+            return retTRI;
+        }
+        catch (SQLException sqle)
+        {
+            if (statement != null)
+                try { statement.close(); } catch (SQLException s) { }
+
+            throw sqle;
+        }
     }
     
     /**
@@ -276,10 +295,19 @@ public class DatabaseManager
     public static TableRow querySingle(Context context, String query,
             Object... parameters) throws SQLException
     {
-        TableRowIterator iterator = query(context, query, parameters);
+        TableRow retRow = null;
+        TableRowIterator iterator = null;
+        try
+        {
+            iterator = query(context, query, parameters);
+            retRow = (!iterator.hasNext()) ? null : iterator.next();
+        }
+        finally
+        {
+            if (iterator != null)
+                iterator.close();
+        }
 
-        TableRow retRow = (!iterator.hasNext()) ? null : iterator.next();
-        iterator.close();
         return (retRow);
     }
     
@@ -304,10 +332,18 @@ public class DatabaseManager
     public static TableRow querySingleTable(Context context, String table,
             String query, Object... parameters) throws SQLException
     {
+        TableRow retRow = null;
         TableRowIterator iterator = queryTable(context, canonicalize(table), query, parameters);
 
-        TableRow retRow = (!iterator.hasNext()) ? null : iterator.next();
-        iterator.close();
+        try
+        {
+            retRow = (!iterator.hasNext()) ? null : iterator.next();
+        }
+        finally
+        {
+            if (iterator != null)
+                iterator.close();
+        }
         return (retRow);
     }
     
@@ -564,26 +600,44 @@ public class DatabaseManager
     public static void insert(Context context, TableRow row)
             throws SQLException
     {
+        int newID = -1;
         String table = canonicalize(row.getTable());
+        Statement statement = null;
+        ResultSet rs = null;
 
-        // Get an ID (primary key) for this row by using the "getnextid"
-        // SQL function in Postgres, or directly with sequences in Oracle
-        String myQuery = "SELECT getnextid('" + table + "') AS result";
-
-        if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
+        try
         {
-            myQuery = "SELECT " + table + "_seq" + ".nextval FROM dual";
+            // Get an ID (primary key) for this row by using the "getnextid"
+            // SQL function in Postgres, or directly with sequences in Oracle
+            String myQuery = "SELECT getnextid('" + table + "') AS result";
+
+            if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
+            {
+                myQuery = "SELECT " + table + "_seq" + ".nextval FROM dual";
+            }
+
+            statement = context.getDBConnection().createStatement();
+            rs = statement.executeQuery(myQuery);
+
+            rs.next();
+
+            newID = rs.getInt(1);
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                try { rs.close(); } catch (SQLException sqle) { }
+            }
+
+            if (statement != null)
+            {
+                try { statement.close(); } catch (SQLException sqle) { }
+            }
         }
 
-        Statement statement = context.getDBConnection().createStatement();
-        ResultSet rs = statement.executeQuery(myQuery);
-
-        rs.next();
-
-        int newID = rs.getInt(1);
-        rs.close();
-
-        statement.close();
+        if (newID < 0)
+            throw new SQLException("Unable to retrieve sequence ID");
 
         // Set the ID in the table row object
         row.setColumn(getPrimaryKeyColumn(table), newID);
@@ -1354,7 +1408,9 @@ public class DatabaseManager
     private static Map retrieveColumnInfo(String table) throws SQLException
     {
         Connection connection = null;
-
+        ResultSet pkcolumns = null;
+        ResultSet columns = null;
+        
         try
         {
             String schema = ConfigurationManager.getProperty("db.schema");
@@ -1367,13 +1423,13 @@ public class DatabaseManager
             String tname = (table.length() >= max) ? table
                     .substring(0, max - 1) : table;
 
-            ResultSet pkcolumns = metadata.getPrimaryKeys(null, schema, tname);
+            pkcolumns = metadata.getPrimaryKeys(null, schema, tname);
             Set pks = new HashSet();
 
             while (pkcolumns.next())
                 pks.add(pkcolumns.getString(4));
 
-            ResultSet columns = metadata.getColumns(null, schema, tname, null);
+            columns = metadata.getColumns(null, schema, tname, null);
 
             while (columns.next())
             {
@@ -1394,9 +1450,19 @@ public class DatabaseManager
         }
         finally
         {
+            if (pkcolumns != null)
+            {
+                try { pkcolumns.close(); } catch (SQLException sqle) { }
+            }
+
+            if (columns != null)
+            {
+                try { columns.close(); } catch (SQLException sqle) { }
+            }
+
             if (connection != null)
             {
-                connection.close();
+                try { connection.close(); } catch (SQLException sqle) { }
             }
         }
     }
@@ -1410,7 +1476,10 @@ public class DatabaseManager
         if (initialized)
         {
             initialized = false;
-            PoolingDriver driver = (PoolingDriver)DriverManager.getDriver("jdbc:apache:commons:dbcp:" + poolName);
+            // Get the registered DBCP pooling driver
+            PoolingDriver driver = (PoolingDriver)DriverManager.getDriver("jdbc:apache:commons:dbcp:");
+
+            // Close the named pool
             if (driver != null)
                 driver.closePool(poolName);
         }
@@ -1429,10 +1498,10 @@ public class DatabaseManager
         try
         {
             // Register basic JDBC driver
-            Class driverClass = Class.forName(ConfigurationManager
-                    .getProperty("db.driver"));
-            Driver basicDriver = (Driver) driverClass.newInstance();
-            DriverManager.registerDriver(basicDriver);
+            Class.forName(ConfigurationManager.getProperty("db.driver"));
+
+            // Register the DBCP driver
+            Class.forName("org.apache.commons.dbcp.PoolingDriver");
 
             // Read pool configuration parameter or use defaults
             // Note we check to see if property is null; getIntProperty returns
@@ -1459,7 +1528,7 @@ public class DatabaseManager
             {
                 maxIdle = -1;
             }
-            
+
             boolean useStatementPool = ConfigurationManager.getBooleanProperty("db.statementpool",true);
 
             // Create object pool
@@ -1529,14 +1598,15 @@ public class DatabaseManager
             }
 
             //
-            // Finally, we create the PoolingDriver itself...
+            // Finally, we get the PoolingDriver itself...
             //
-            PoolingDriver driver = new PoolingDriver();
+            PoolingDriver driver = (PoolingDriver)DriverManager.getDriver("jdbc:apache:commons:dbcp:");
 
             //
             // ...and register our pool with it.
             //
-            driver.registerPool(poolName, connectionPool);
+            if (driver != null)
+                driver.registerPool(poolName, connectionPool);
 
             // Old SimplePool init
             //DriverManager.registerDriver(new SimplePool());

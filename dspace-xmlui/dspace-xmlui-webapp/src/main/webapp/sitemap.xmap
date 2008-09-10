@@ -158,6 +158,7 @@
 				<expires>3600000</expires> <!-- 1000 * 60 * 60 = 3600000 = One hour -->
 			</map:reader>
 			<map:reader name="BitstreamReader" src="org.dspace.app.xmlui.cocoon.BitstreamReader"/>
+			<map:reader name="ExportReader" src="org.dspace.app.xmlui.cocoon.ItemExportDownloadReader"/>
 		</map:readers>
 		<map:actions>
 			<map:action name="locale" src="org.dspace.app.xmlui.cocoon.DSpaceLocaleAction"/>
@@ -261,6 +262,16 @@
 			<map:match pattern="html/*/*/**">
 				<map:redirect-to uri="{request:contextPath}/bitstream/handle/{1}/{2}/{3}" permanent="yes"/>
 			</map:match>
+			
+			<!--
+				Downloads for the package download export
+			-->
+			<map:match pattern="exportdownload/*">
+				<map:read type="ExportReader">
+					<map:parameter name="fileName" value="{1}"/>
+				</map:read>
+			</map:match>
+			
 		</map:pipeline>
 		
 		
@@ -270,7 +281,16 @@
 		<!-- non-bitstream pipeline -->
 		<map:pipeline>
 			<!--<map:parameter name="expires" value="now"/>-->
-		
+
+         <!-- 
+            catch mydspace uri's and immediately redirect 
+            to "submissions" this is a fix to catch approval 
+            emails "mydspace" linking from Workflow system.
+         -->
+         <map:match pattern="mydspace">
+            <map:redirect-to uri="submissions" permanent="yes" />
+         </map:match>
+
 			<!-- Theme pipeline -->
 			<map:match pattern="DRI/**">
 				<map:mount check-reload="no" src="aspects/aspects.xmap" uri-prefix="DRI/"/>

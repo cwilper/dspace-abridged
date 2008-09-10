@@ -224,8 +224,7 @@ public class LogAnalyser
    ////////////////////////
    
    /** the log directory to be analysed */
-   private static String logDir = ConfigurationManager.getProperty("dspace.dir") + 
-                        File.separator + "log";
+   private static String logDir = ConfigurationManager.getProperty("log.dir");  
         
    /** the regex to describe the file name format */
    private static String fileTemplate = "dspace\\.log.*";
@@ -236,8 +235,7 @@ public class LogAnalyser
                             "dstat.cfg";
    
    /** the output file to which to write aggregation data */
-   private static String outFile = ConfigurationManager.getProperty("dspace.dir") + 
-                            File.separator + "log" + File.separator + "dstat.dat";
+   private static String outFile = ConfigurationManager.getProperty("log.dir") + File.separator + "dstat.dat";
    
    /** the starting date of the report */
    private static Date startDate = null;
@@ -1213,7 +1211,6 @@ public class LogAnalyser
         }
 
         dateQuery.append("FROM metadatavalue " +
-                          "FROM metadatavalue " +
                           "WHERE metadata_field_id = (" +
                           " SELECT metadata_field_id " +
                           " FROM metadatafieldregistry " +

@@ -16,7 +16,7 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-parent</artifactId>
-      <version>1.5.0</version>
+      <version>1.5.1</version>
    </parent>
 
    <repositories>
@@ -36,33 +36,15 @@
       </repository>
    </repositories>
 
-   <pluginRepositories>
-      <pluginRepository>
-         <id>maven.dspace.org/snapshot</id>
-         <name>DSpace Maven Repository</name>
-         <url>http://maven.dspace.org/snapshot</url>
-         <releases>
-            <enabled>false</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-         </releases>
-         <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-         </snapshots>
-      </pluginRepository>
-   </pluginRepositories>
-
-
    <!--
       The Subversion repository location is used by Continuum to update against
       when changes have occured, this spawns a new build cycle and releases snapshots
       into the snapshot repository below.
    -->
    <scm>
-      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace-sword</connection>
-      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace-sword</developerConnection>
-      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5/dspace-sword</url>
+      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace-sword</connection>
+      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace-sword</developerConnection>
+      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5_1/dspace-sword</url>
    </scm>
 
 

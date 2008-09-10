@@ -13,7 +13,7 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>modules</artifactId>
-      <version>1.5.0</version>
+      <version>1.5.1</version>
    </parent>
 
    <repositories>
@@ -32,26 +32,10 @@
       </repository>
    </repositories>
 
-   <pluginRepositories>
-      <pluginRepository>
-         <id>maven.dspace.org/snapshot</id>
-         <name>DSpace Maven Repository</name>
-         <url>http://maven.dspace.org/snapshot</url>
-         <releases>
-            <updatePolicy>never</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-         </releases>
-         <snapshots>
-            <updatePolicy>always</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-         </snapshots>
-      </pluginRepository>
-   </pluginRepositories>
-
    <scm>
-      <connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5</connection>
-      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace/modules/xmlui</developerConnection>
-      <url>http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace/modules/xmlui</url>
+      <connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1</connection>
+      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace/modules/xmlui</developerConnection>
+      <url>http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace/modules/xmlui</url>
    </scm>
 
    <build>
@@ -176,6 +160,13 @@
       <dependency>
          <groupId>org.dspace</groupId>
          <artifactId>dspace-xmlui-api</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+         <version>2.3</version>
+         <scope>provided</scope>
       </dependency>
 
    </dependencies>

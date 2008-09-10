@@ -46,10 +46,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 import javax.mail.internet.MimeUtility;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.avalon.excalibur.pool.Recyclable;
@@ -189,8 +187,8 @@ public class BitstreamReader extends AbstractReader implements Recyclable
         {
             this.request = ObjectModelHelper.getRequest(objectModel);
             this.response = ObjectModelHelper.getResponse(objectModel);
-            Context context = ContextUtil.obtainContext(objectModel);
-
+            Context context = ContextUtil.obtainContext(objectModel);            
+            
             // Get our parameters that identify the bitstream
             int itemID = par.getParameterAsInteger("itemID", -1);
             int bitstreamID = par.getParameterAsInteger("bitstreamID", -1);
@@ -228,26 +226,37 @@ public class BitstreamReader extends AbstractReader implements Recyclable
             {
             	// Reference by an item's handle.
             	dso = HandleManager.resolveToObject(context,handle);
-            	
-            	if (dso instanceof Item && sequence > -1)
-            	{
-            		bitstream = findBitstreamBySequence((Item) dso,sequence);
-            	}
-            	else if (dso instanceof Item && name != null)
-            	{
-            		bitstream = findBitstreamByName((Item) dso,name);
-            	}
+
+                if (dso instanceof Item)
+                {
+                    item = (Item)dso;
+
+                    if (sequence > -1)
+                    {
+                        bitstream = findBitstreamBySequence(item,sequence);
+                    }
+                    else if (name != null)
+                    {
+                        bitstream = findBitstreamByName(item,name);
+                    }
+                }
             }
-          
 
             // Was a bitstream found?
             if (bitstream == null)
             {
             	throw new ResourceNotFoundException("Unable to locate bitstream");
             }
-                
+
             // Is there a User logged in and does the user have access to read it?
-            if (!AuthorizeManager.authorizeActionBoolean(context, bitstream, Constants.READ))
+            boolean isAuthorized = AuthorizeManager.authorizeActionBoolean(context, bitstream, Constants.READ); 
+            if (item != null && item.isWithdrawn() && !AuthorizeManager.isAdmin(context))
+            {
+                isAuthorized = false;
+                log.info(LogManager.getHeader(context, "view_bitstream", "handle=" + item.getHandle() + ",withdrawn=true"));
+            }
+
+            if (!isAuthorized)
             {
             	if(this.request.getSession().getAttribute("dspace.current.user.id")!=null){
             		// A user is logged in, but they are not authorized to read this bitstream, 
@@ -284,24 +293,29 @@ public class BitstreamReader extends AbstractReader implements Recyclable
             	}
             }
                 
-                
             // Success, bitstream found and the user has access to read it.
             // Store these for later retreval:
             this.bitstreamInputStream = bitstream.retrieve();
             this.bitstreamSize = bitstream.getSize();
             this.bitstreamMimeType = bitstream.getFormat().getMIMEType();
             this.bitstreamName = bitstream.getName();
-            
+
             // Trim any path information from the bitstream
-    		int finalSlashIndex = bitstreamName.lastIndexOf("/");
-    		if (finalSlashIndex > 0)
-    		{
-    			bitstreamName = bitstreamName.substring(finalSlashIndex+1);
-    		}
-    		
-            
+            if (bitstreamName != null && bitstreamName.length() >0 )
+            {
+	    		int finalSlashIndex = bitstreamName.lastIndexOf("/");
+	    		if (finalSlashIndex > 0)
+	    		{
+	    			bitstreamName = bitstreamName.substring(finalSlashIndex+1);
+	    		}
+            }
+            else
+            {
+            	// In-case there is no bitstream name...
+            	bitstreamName = "bitstream";
+            }
             // Log that the bitstream has been viewed.
-			log.info(LogManager.getHeader(context, "view_bitstream", "bitstream_id=" + bitstream.getID()));
+            log.info(LogManager.getHeader(context, "view_bitstream", "bitstream_id=" + bitstream.getID()));
         }
         catch (SQLException sqle)
         {

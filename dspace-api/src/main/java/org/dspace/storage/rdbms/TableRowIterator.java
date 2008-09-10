@@ -108,7 +108,7 @@ public class TableRowIterator
     /**
      * Finalize -- this method is called when this object is GC-ed.
      */
-    public void finalize()
+    protected void finalize()
     {
         close();
     }
@@ -197,13 +197,18 @@ public class TableRowIterator
     {
         List resultsList = new ArrayList();
 
-        while (hasNext())
+        try
         {
-            resultsList.add(next());
+            while (hasNext())
+            {
+                resultsList.add(next());
+            }
         }
-
-        // Close the connection after converting it to a list.
-        this.close();
+        finally
+        {
+            // Close the connection after converting it to a list.
+            this.close();
+        }
         
         return resultsList;
     }

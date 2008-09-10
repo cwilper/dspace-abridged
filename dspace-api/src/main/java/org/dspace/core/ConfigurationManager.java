@@ -79,6 +79,7 @@ import org.apache.log4j.helpers.OptionConverter;
  * 
  * @author Robert Tansley
  * @author Larry Stone - Interpolated values.
+ * @author Mark Diggory - General Improvements to detection, logging and loading.
  * @version $Revision$
  */
 public class ConfigurationManager
@@ -96,6 +97,15 @@ public class ConfigurationManager
     // configuration; anything greater than this is very likely to be a loop.
     private final static int RECURSION_LIMIT = 9;
 
+    /**
+     * Identify if DSpace is properly configured
+     * @return boolean true if configured, false otherwise
+     */
+    public static boolean isConfigured()
+    {
+        return properties != null;
+    }
+    
     /**
      * 
      */
@@ -177,9 +187,12 @@ public class ConfigurationManager
     {
     // Load in default license
 
+        FileReader fr = null;
+        BufferedReader br = null;
         try
         {
-            BufferedReader br = new BufferedReader(new FileReader(licenseFile));
+            fr = new FileReader(licenseFile);
+            br = new BufferedReader(fr);
             String lineIn;
             license = "";
             while ((lineIn = br.readLine()) != null)
@@ -195,6 +208,15 @@ public class ConfigurationManager
            // configuration we can't do anything
             System.exit(1);
         }
+        finally
+        {
+            if (br != null)
+                try { br.close(); } catch (IOException ioe) { }
+
+            if (fr != null)
+                try { fr.close(); } catch (IOException ioe) { }
+        }
+
         return license;
     }
      
@@ -480,7 +502,8 @@ public class ConfigurationManager
     protected static File getConfigurationFile()
     {
         // in case it hasn't been done yet.
-        loadConfig(null);
+        if (loadedFile == null)
+            loadConfig(null);
 
         return loadedFile;
     }
@@ -494,7 +517,7 @@ public class ConfigurationManager
      *            The <code>dspace.cfg</code> configuration file to use, or
      *            <code>null</code> to try default locations
      */
-    public static void loadConfig(String configFile)
+    public static synchronized void loadConfig(String configFile)
     {
         
         if (properties != null)
@@ -505,9 +528,20 @@ public class ConfigurationManager
 
         URL url = null;
         
+        InputStream is = null;
         try
         {
-            String configProperty = System.getProperty("dspace.configuration");
+            String configProperty = null;
+            try
+            {
+                configProperty = System.getProperty("dspace.configuration");
+            }
+            catch (SecurityException se)
+            {
+                // A security manager may stop us from accessing the system properties.
+                // This isn't really a fatal error though, so catch and ignore
+                log.warn("Unable to access system properties, ignoring.", se);
+            }
 
             if (configFile != null)
             {
@@ -546,7 +580,8 @@ public class ConfigurationManager
             else
             {
                 properties = new Properties();
-                properties.load(url.openStream());
+                is = url.openStream();
+                properties.load(is);
 
                 // walk values, interpolating any embedded references.
                 for (Enumeration pe = properties.propertyNames(); pe.hasMoreElements(); )
@@ -567,16 +602,25 @@ public class ConfigurationManager
             // configuration we can't do anything
             throw new RuntimeException("Cannot load configuration: " + url, e);
         }
-        
+        finally
+        {
+            if (is != null)
+                try { is.close(); } catch (IOException ioe) { }
+        }
+
         // Load in default license
         File licenseFile = new File(getProperty("dspace.dir") + File.separator
                 + "config" + File.separator + "default.license");
+
+        FileInputStream  fir = null;
+        InputStreamReader ir = null;
+        BufferedReader br = null;
         try
         {
             
-            FileInputStream fir = new FileInputStream(licenseFile);
-            InputStreamReader ir = new InputStreamReader(fir, "UTF-8");
-            BufferedReader br = new BufferedReader(ir);
+            fir = new FileInputStream(licenseFile);
+            ir = new InputStreamReader(fir, "UTF-8");
+            br = new BufferedReader(ir);
             String lineIn;
             license = "";
 
@@ -595,7 +639,18 @@ public class ConfigurationManager
             // FIXME: Maybe something more graceful here, but with the
             // configuration we can't do anything
             throw new RuntimeException("Cannot load license: " + licenseFile.toString(),e);
-        }   
+        }
+        finally
+        {
+            if (br != null)
+                try { br.close(); } catch (IOException ioe) { }
+
+            if (ir != null)
+                try { ir.close(); } catch (IOException ioe) { }
+
+            if (fir != null)
+                try { fir.close(); } catch (IOException ioe) { }
+        }
 
         
         
@@ -755,7 +810,7 @@ public class ConfigurationManager
     
     private static void info(String string)
     {
-        if (!isConfigured())
+        if (!isLog4jConfigured())
         {
             System.out.println("INFO: " + string);
         }
@@ -767,7 +822,7 @@ public class ConfigurationManager
 
     private static void warn(String string)
     {
-        if (!isConfigured())
+        if (!isLog4jConfigured())
         {
             System.out.println("WARN: " + string);
         }
@@ -779,7 +834,7 @@ public class ConfigurationManager
 
     private static void fatal(String string, Exception e)
     {
-        if (!isConfigured())
+        if (!isLog4jConfigured())
         {
             System.out.println("FATAL: " + string);
             e.printStackTrace();
@@ -792,7 +847,7 @@ public class ConfigurationManager
 
     private static void fatal(String string)
     {
-        if (!isConfigured())
+        if (!isLog4jConfigured())
         {
             System.out.println("FATAL: " + string);
         }
@@ -806,7 +861,7 @@ public class ConfigurationManager
      * Only current solution available to detect 
      * if log4j is truly configured. 
      */
-    private static boolean isConfigured()
+    private static boolean isLog4jConfigured()
     {
         Enumeration en = org.apache.log4j.LogManager.getRootLogger()
                 .getAllAppenders();

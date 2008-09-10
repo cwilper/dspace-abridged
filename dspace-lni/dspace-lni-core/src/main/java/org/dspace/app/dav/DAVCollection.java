@@ -46,7 +46,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -161,12 +160,21 @@ class DAVCollection extends DAVDSpaceObject
     {
         Vector result = new Vector();
         ItemIterator ii = this.collection.getItems();
-        while (ii.hasNext())
+        try
         {
-            Item item = ii.next();
-            result.add(new DAVItem(this.context, this.request, this.response,
-                    makeChildPath(item), item));
+            while (ii.hasNext())
+            {
+                Item item = ii.next();
+                result.add(new DAVItem(this.context, this.request, this.response,
+                        makeChildPath(item), item));
+            }
         }
+        finally
+        {
+            if (ii != null)
+                ii.close();
+        }
+        
         return (DAVResource[]) result.toArray(new DAVResource[result.size()]);
     }
 
@@ -351,7 +359,7 @@ class DAVCollection extends DAVDSpaceObject
      */
     @Override
     protected void get() throws SQLException, AuthorizeException,
-            ServletException, IOException, DAVStatusException
+            IOException, DAVStatusException
     {
         throw new DAVStatusException(HttpServletResponse.SC_NOT_IMPLEMENTED,
                 "GET not implemented for Collection.");
@@ -452,13 +460,12 @@ class DAVCollection extends DAVDSpaceObject
      * 
      * @throws SQLException the SQL exception
      * @throws AuthorizeException the authorize exception
-     * @throws ServletException the servlet exception
      * @throws IOException Signals that an I/O exception has occurred.
      * @throws DAVStatusException the DAV status exception
      */
     @Override
     protected void put() throws SQLException, AuthorizeException,
-            ServletException, IOException, DAVStatusException
+            IOException, DAVStatusException
     {
         try
         {

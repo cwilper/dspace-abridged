@@ -141,26 +141,33 @@ public class Group extends DSpaceObject
                                 "epersongroup2eperson.eperson_group_id= ?",
                                 myRow.getIntColumn("eperson_group_id"));
 
-                while (tri.hasNext())
+                try
                 {
-                    TableRow r = (TableRow) tri.next();
-
-                    // First check the cache
-                    EPerson fromCache = (EPerson) myContext.fromCache(
-                            EPerson.class, r.getIntColumn("eperson_id"));
-
-                    if (fromCache != null)
+                    while (tri.hasNext())
                     {
-                        epeople.add(fromCache);
-                    }
-                    else
-                    {
-                        epeople.add(new EPerson(myContext, r));
+                        TableRow r = (TableRow) tri.next();
+
+                        // First check the cache
+                        EPerson fromCache = (EPerson) myContext.fromCache(
+                                EPerson.class, r.getIntColumn("eperson_id"));
+
+                        if (fromCache != null)
+                        {
+                            epeople.add(fromCache);
+                        }
+                        else
+                        {
+                            epeople.add(new EPerson(myContext, r));
+                        }
                     }
                 }
+                finally
+                {
+                    // close the TableRowIterator to free up resources
+                    if (tri != null)
+                        tri.close();
+                }
 
-                tri.close();
-                
                 // now get Group objects
                 tri = DatabaseManager.queryTable(myContext,"epersongroup",
                                 "SELECT epersongroup.* FROM epersongroup, group2group WHERE " +
@@ -168,25 +175,32 @@ public class Group extends DSpaceObject
                                 "group2group.parent_id= ? ",
                                 myRow.getIntColumn("eperson_group_id"));
 
-                while (tri.hasNext())
+                try
                 {
-                    TableRow r = (TableRow) tri.next();
-
-                    // First check the cache
-                    Group fromCache = (Group) myContext.fromCache(Group.class,
-                            r.getIntColumn("eperson_group_id"));
-
-                    if (fromCache != null)
+                    while (tri.hasNext())
                     {
-                        groups.add(fromCache);
-                    }
-                    else
-                    {
-                        groups.add(new Group(myContext, r));
+                        TableRow r = (TableRow) tri.next();
+
+                        // First check the cache
+                        Group fromCache = (Group) myContext.fromCache(Group.class,
+                                r.getIntColumn("eperson_group_id"));
+
+                        if (fromCache != null)
+                        {
+                            groups.add(fromCache);
+                        }
+                        else
+                        {
+                            groups.add(new Group(myContext, r));
+                        }
                     }
                 }
-                
-                tri.close();
+                finally
+                {
+                    // close the TableRowIterator to free up resources
+                    if (tri != null)
+                        tri.close();
+                }
 
             }
             catch (Exception e)
@@ -449,16 +463,23 @@ public class Group extends DSpaceObject
 
         Set<Integer> groupIDs = new HashSet<Integer>();
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
 
-            int childID = row.getIntColumn("eperson_group_id");
+                int childID = row.getIntColumn("eperson_group_id");
 
-            groupIDs.add(new Integer(childID));
+                groupIDs.add(new Integer(childID));
+            }
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         // Also need to get all "Special Groups" user is a member of!
         // Otherwise, you're ignoring the user's membership to these groups!
@@ -501,16 +522,23 @@ public class Group extends DSpaceObject
                 "SELECT * FROM group2groupcache WHERE " + groupQuery,
                 parameters);
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
 
-            int parentID = row.getIntColumn("parent_id");
+                int parentID = row.getIntColumn("parent_id");
 
-            groupIDs.add(new Integer(parentID));
+                groupIDs.add(new Integer(parentID));
+            }
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         return groupIDs;
     }
@@ -570,16 +598,23 @@ public class Group extends DSpaceObject
         
         Set<Integer> groupIDs = new HashSet<Integer>();
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
 
-            int childID = row.getIntColumn("child_id");
+                int childID = row.getIntColumn("child_id");
 
-            groupIDs.add(new Integer(childID));
+                groupIDs.add(new Integer(childID));
+            }
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         // now we have all the groups (including this one)
         // it is time to find all the EPeople who belong to those groups
@@ -612,16 +647,23 @@ public class Group extends DSpaceObject
                 "SELECT * FROM epersongroup2eperson WHERE " + epersonQuery,
                 parameters);
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
 
-            int epersonID = row.getIntColumn("eperson_id");
-   
-            epeopleIDs.add(new Integer(epersonID));
+                int epersonID = row.getIntColumn("eperson_id");
+
+                epeopleIDs.add(new Integer(epersonID));
+            }
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         return epeopleIDs;
     }
@@ -734,29 +776,37 @@ public class Group extends DSpaceObject
         		context, "epersongroup",
                 "SELECT * FROM epersongroup ORDER BY "+s);
 
-        List gRows = rows.toList();
-
-        Group[] groups = new Group[gRows.size()];
-
-        for (int i = 0; i < gRows.size(); i++)
+        try
         {
-            TableRow row = (TableRow) gRows.get(i);
+            List gRows = rows.toList();
 
-            // First check the cache
-            Group fromCache = (Group) context.fromCache(Group.class, row
-                    .getIntColumn("eperson_group_id"));
+            Group[] groups = new Group[gRows.size()];
 
-            if (fromCache != null)
+            for (int i = 0; i < gRows.size(); i++)
             {
-                groups[i] = fromCache;
+                TableRow row = (TableRow) gRows.get(i);
+
+                // First check the cache
+                Group fromCache = (Group) context.fromCache(Group.class, row
+                        .getIntColumn("eperson_group_id"));
+
+                if (fromCache != null)
+                {
+                    groups[i] = fromCache;
+                }
+                else
+                {
+                    groups[i] = new Group(context, row);
+                }
             }
-            else
-            {
-                groups[i] = new Group(context, row);
-            }
+
+            return groups;
         }
-
-        return groups;
+        finally
+        {
+            if (rows != null)
+                rows.close();
+        }
     }
     
     
@@ -794,13 +844,47 @@ public class Group extends DSpaceObject
     		throws SQLException
 	{
 		String params = "%"+query.toLowerCase()+"%";
-		String dbquery = "SELECT * FROM epersongroup WHERE name ILIKE ? OR eperson_group_id = ? ORDER BY name ASC ";
+        StringBuffer queryBuf = new StringBuffer();
+		queryBuf.append("SELECT * FROM epersongroup WHERE LOWER(name) LIKE LOWER(?) OR eperson_group_id = ? ORDER BY name ASC ");
 		
-		if (offset >= 0 && limit > 0) {
-			dbquery += "LIMIT " + limit + " OFFSET " + offset;
-		}
-		
-		// When checking against the eperson-id, make sure the query can be made into a number
+        // Add offset and limit restrictions - Oracle requires special code
+        if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
+        {
+            // First prepare the query to generate row numbers
+            if (limit > 0 || offset > 0)
+            {
+                queryBuf.insert(0, "SELECT /*+ FIRST_ROWS(n) */ rec.*, ROWNUM rnum  FROM (");
+                queryBuf.append(") ");
+            }
+
+            // Restrict the number of rows returned based on the limit
+            if (limit > 0)
+            {
+                queryBuf.append("rec WHERE rownum<=? ");
+                // If we also have an offset, then convert the limit into the maximum row number
+                if (offset > 0)
+                    limit += offset;
+            }
+
+            // Return only the records after the specified offset (row number)
+            if (offset > 0)
+            {
+                queryBuf.insert(0, "SELECT * FROM (");
+                queryBuf.append(") WHERE rnum>?");
+            }
+        }
+        else
+        {
+            if (limit > 0)
+                queryBuf.append(" LIMIT ? ");
+
+            if (offset > 0)
+                queryBuf.append(" OFFSET ? ");
+        }
+
+        String dbquery = queryBuf.toString();
+
+        // When checking against the eperson-id, make sure the query can be made into a number
 		Integer int_param;
 		try {
 			int_param = Integer.valueOf(query);
@@ -808,31 +892,48 @@ public class Group extends DSpaceObject
 		catch (NumberFormatException e) {
 			int_param = new Integer(-1);
 		}
-		
-		TableRowIterator rows = 
-			DatabaseManager.query(context, dbquery, new Object[]{params, int_param});
-		
-		List groupRows = rows.toList();
-		Group[] groups = new Group[groupRows.size()];
-		
-		for (int i = 0; i < groupRows.size(); i++)
-	    {
-	        TableRow row = (TableRow) groupRows.get(i);
-	
-	        // First check the cache
-	        Group fromCache = (Group) context.fromCache(Group.class, row
-	                .getIntColumn("eperson_group_id"));
-	
-	        if (fromCache != null)
-	        {
-	            groups[i] = fromCache;
-	        }
-	        else
-	        {
-	            groups[i] = new Group(context, row);
-	        }
-	    }
-	    return groups;
+
+        // Create the parameter array, including limit and offset if part of the query
+        Object[] paramArr = new Object[]{params, int_param};
+        if (limit > 0 && offset > 0)
+            paramArr = new Object[] {params, int_param,limit,offset};
+        else if (limit > 0)
+            paramArr = new Object[] {params, int_param,limit};
+        else if (offset > 0)
+            paramArr = new Object[] {params, int_param,offset};
+
+        TableRowIterator rows =
+			DatabaseManager.query(context, dbquery, paramArr);
+
+        try
+        {
+            List groupRows = rows.toList();
+            Group[] groups = new Group[groupRows.size()];
+
+            for (int i = 0; i < groupRows.size(); i++)
+            {
+                TableRow row = (TableRow) groupRows.get(i);
+
+                // First check the cache
+                Group fromCache = (Group) context.fromCache(Group.class, row
+                        .getIntColumn("eperson_group_id"));
+
+                if (fromCache != null)
+                {
+                    groups[i] = fromCache;
+                }
+                else
+                {
+                    groups[i] = new Group(context, row);
+                }
+            }
+            return groups;
+        }
+        finally
+        {
+            if (rows != null)
+                rows.close();
+        }
 	}
 
     /**
@@ -850,7 +951,7 @@ public class Group extends DSpaceObject
     	throws SQLException
 	{
 		String params = "%"+query.toLowerCase()+"%";
-		String dbquery = "SELECT count(*) as count FROM epersongroup WHERE name ILIKE ? OR eperson_group_id = ? ";
+		String dbquery = "SELECT count(*) as gcount FROM epersongroup WHERE LOWER(name) LIKE LOWER(?) OR eperson_group_id = ? ";
 		
 		// When checking against the eperson-id, make sure the query can be made into a number
 		Integer int_param;
@@ -868,11 +969,11 @@ public class Group extends DSpaceObject
 		Long count;
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
         {
-            count = new Long(row.getIntColumn("count"));              
+            count = new Long(row.getIntColumn("gcount"));
         }
         else  //getLongColumn works for postgres
         {
-            count = new Long(row.getLongColumn("count"));
+            count = new Long(row.getLongColumn("gcount"));
         }
 
 		return count.intValue();
@@ -1092,32 +1193,39 @@ public class Group extends DSpaceObject
 
         Map<Integer,Set<Integer>> parents = new HashMap<Integer,Set<Integer>>();
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = (TableRow) tri.next();
-
-            Integer parentID = new Integer(row.getIntColumn("parent_id"));
-            Integer childID = new Integer(row.getIntColumn("child_id"));
-
-            // if parent doesn't have an entry, create one
-            if (!parents.containsKey(parentID))
+            while (tri.hasNext())
             {
-                Set<Integer> children = new HashSet<Integer>();
+                TableRow row = (TableRow) tri.next();
 
-                // add child id to the list
-                children.add(childID);
-                parents.put(parentID, children);
-            }
-            else
-            {
-                // parent has an entry, now add the child to the parent's record
-                // of children
-                Set<Integer> children =  parents.get(parentID);
-                children.add(childID);
+                Integer parentID = new Integer(row.getIntColumn("parent_id"));
+                Integer childID = new Integer(row.getIntColumn("child_id"));
+
+                // if parent doesn't have an entry, create one
+                if (!parents.containsKey(parentID))
+                {
+                    Set<Integer> children = new HashSet<Integer>();
+
+                    // add child id to the list
+                    children.add(childID);
+                    parents.put(parentID, children);
+                }
+                else
+                {
+                    // parent has an entry, now add the child to the parent's record
+                    // of children
+                    Set<Integer> children =  parents.get(parentID);
+                    children.add(childID);
+                }
             }
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
 
         // now parents is a hash of all of the IDs of groups that are parents
         // and each hash entry is a hash of all of the IDs of children of those

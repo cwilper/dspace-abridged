@@ -42,14 +42,22 @@ package org.dspace.eperson;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.mail.MessagingException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
@@ -99,26 +107,33 @@ public class Subscribe
                 || ((context.getCurrentUser() != null) && (context
                         .getCurrentUser().getID() == eperson.getID())))
         {
-            // already subscribed?      	
-        	TableRowIterator r = DatabaseManager.query(context,
+            // already subscribed?          
+            TableRowIterator r = DatabaseManager.query(context,
                     "SELECT * FROM subscription WHERE eperson_id= ? " +
                     " AND collection_id= ? ", 
                     eperson.getID(),collection.getID());
 
-            if (!r.hasNext())
+            try
             {
-                // Not subscribed, so add them
-                TableRow row = DatabaseManager.create(context, "subscription");
-                row.setColumn("eperson_id", eperson.getID());
-                row.setColumn("collection_id", collection.getID());
-                DatabaseManager.update(context, row);
+                if (!r.hasNext())
+                {
+                    // Not subscribed, so add them
+                    TableRow row = DatabaseManager.create(context, "subscription");
+                    row.setColumn("eperson_id", eperson.getID());
+                    row.setColumn("collection_id", collection.getID());
+                    DatabaseManager.update(context, row);
 
-                log.info(LogManager.getHeader(context, "subscribe",
-                        "eperson_id=" + eperson.getID() + ",collection_id="
-                                + collection.getID()));
+                    log.info(LogManager.getHeader(context, "subscribe",
+                            "eperson_id=" + eperson.getID() + ",collection_id="
+                                    + collection.getID()));
+                }
             }
-            
-            r.close();
+            finally
+            {
+                // close the TableRowIterator to free up resources
+                if (r != null)
+                    r.close();
+            }
         }
         else
         {
@@ -191,15 +206,22 @@ public class Subscribe
 
         List collections = new ArrayList();
 
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
 
-            collections.add(Collection.find(context, row
-                    .getIntColumn("collection_id")));
+                collections.add(Collection.find(context, row
+                        .getIntColumn("collection_id")));
+            }
         }
-
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
         
         Collection[] collArray = new Collection[collections.size()];
 
@@ -224,11 +246,17 @@ public class Subscribe
                 "SELECT * FROM subscription WHERE eperson_id= ? " +
                 "AND collection_id= ? ", 
                 eperson.getID(),collection.getID());
-    	
-    	boolean result = tri.hasNext();
-    	tri.close();
-    	
-    	return result;
+
+        try
+        {
+            return tri.hasNext();
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
     }
 
     /**
@@ -246,8 +274,9 @@ public class Subscribe
      * 
      * @param context
      *            DSpace context object
+     * @param test 
      */
-    public static void processDaily(Context context) throws SQLException,
+    public static void processDaily(Context context, boolean test) throws SQLException,
             IOException
     {
         // Grab the subscriptions
@@ -257,49 +286,56 @@ public class Subscribe
         EPerson currentEPerson = null;
         List collections = null; // List of Collections
 
-        // Go through the list collating subscriptions for each e-person
-        while (tri.hasNext())
+        try
         {
-            TableRow row = tri.next();
-
-            // Does this row relate to the same e-person as the last?
-            if ((currentEPerson == null)
-                    || (row.getIntColumn("eperson_id") != currentEPerson
-                            .getID()))
+            // Go through the list collating subscriptions for each e-person
+            while (tri.hasNext())
             {
-                // New e-person. Send mail for previous e-person
-                if (currentEPerson != null)
-                {
+                TableRow row = tri.next();
 
-                    try
+                // Does this row relate to the same e-person as the last?
+                if ((currentEPerson == null)
+                        || (row.getIntColumn("eperson_id") != currentEPerson
+                                .getID()))
+                {
+                    // New e-person. Send mail for previous e-person
+                    if (currentEPerson != null)
                     {
-                        sendEmail(context, currentEPerson, collections);
+
+                        try
+                        {
+                            sendEmail(context, currentEPerson, collections, test);
+                        }
+                        catch (MessagingException me)
+                        {
+                            log.error("Failed to send subscription to eperson_id="
+                                    + currentEPerson.getID());
+                            log.error(me);
+                        }
                     }
-                    catch (MessagingException me)
-                    {
-                        log.error("Failed to send subscription to eperson_id="
-                                + currentEPerson.getID());
-                        log.error(me);
-                    }
+
+                    currentEPerson = EPerson.find(context, row
+                            .getIntColumn("eperson_id"));
+                    collections = new ArrayList();
                 }
 
-                currentEPerson = EPerson.find(context, row
-                        .getIntColumn("eperson_id"));
-                collections = new ArrayList();
+                collections.add(Collection.find(context, row
+                        .getIntColumn("collection_id")));
             }
-
-            collections.add(Collection.find(context, row
-                    .getIntColumn("collection_id")));
         }
-        
-        tri.close();
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+                tri.close();
+        }
         
         // Process the last person
         if (currentEPerson != null)
         {
             try
             {
-                sendEmail(context, currentEPerson, collections);
+                sendEmail(context, currentEPerson, collections, test);
             }
             catch (MessagingException me)
             {
@@ -321,9 +357,10 @@ public class Subscribe
      *            eperson to send to
      * @param collections
      *            List of collection IDs (Integers)
+     * @param test 
      */
     public static void sendEmail(Context context, EPerson eperson,
-            List collections) throws IOException, MessagingException,
+            List collections, boolean test) throws IOException, MessagingException,
             SQLException
     {
         // Get a resource bundle according to the eperson language preferences
@@ -362,6 +399,11 @@ public class Subscribe
                         false, // But not containers
                         false); // Or withdrawals
     
+                if (ConfigurationManager.getBooleanProperty("eperson.subscription.onlynew", false))
+                {
+                    itemInfos = filterOutModified(itemInfos);
+                }
+
                 // Only add to buffer if there are new items
                 if (itemInfos.size() > 0)
                 {
@@ -426,14 +468,24 @@ public class Subscribe
         // Send an e-mail if there were any new items
         if (emailText.length() > 0)
         {
-            Email email = ConfigurationManager.getEmail(I18nUtil.getEmailFilename(supportedLocale, "subscription"));
+            
+            if(test)
+            {
+                log.info(LogManager.getHeader(context, "subscription:", "eperson=" + eperson.getEmail() ));
+                log.info(LogManager.getHeader(context, "subscription:", "text=" + emailText.toString() ));
 
-            email.addRecipient(eperson.getEmail());
-            email.addArgument(emailText.toString());
-            email.send();
+            } else {
+                
+                Email email = ConfigurationManager.getEmail(I18nUtil.getEmailFilename(supportedLocale, "subscription"));
+                email.addRecipient(eperson.getEmail());
+                email.addArgument(emailText.toString());
+                email.send();
+                
+                log.info(LogManager.getHeader(context, "sent_subscription", "eperson_id=" + eperson.getID() ));
+                
+            }
 
-            log.info(LogManager.getHeader(context, "sent_subscription",
-                    "eperson_id=" + eperson.getID()));
+            
         }
     }
 
@@ -445,12 +497,53 @@ public class Subscribe
      */
     public static void main(String[] argv) 
     {
+        String usage = "org.dspace.eperson.Subscribe [-t] or nothing to send out subscriptions.";
+        
+        Options options = new Options();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine line = null;
+        
+        {
+            Option opt = new Option("t", "test", false, "Run test session");
+            opt.setRequired(false);
+            options.addOption(opt);
+        }
+        
+        {
+            Option opt = new Option("h", "help", false, "Print this help message");
+            opt.setRequired(false);
+            options.addOption(opt);
+        }
+
+        try
+        {
+            line = new PosixParser().parse(options, argv);
+        }
+        catch (Exception e)
+        {
+            // automatically generate the help statement
+            formatter.printHelp(usage, e.getMessage(), options, "");
+            System.exit(1);
+        }
+
+        if (line.hasOption("h"))
+        {
+            // automatically generate the help statement
+            formatter.printHelp(usage, options);
+            System.exit(1);
+        }
+        
+        boolean test = line.hasOption("t");
+
+        if(test)
+            log.setLevel(Level.DEBUG);
+        
         Context context = null;
 
         try
         {
             context = new Context();
-            processDaily(context);
+            processDaily(context, test);
             context.complete();
         }
         catch( Exception e )
@@ -465,5 +558,49 @@ public class Subscribe
                 context.abort();
             }
         }
+    }
+
+    private static List filterOutModified(List completeList)
+    {
+        log.debug("Filtering out all modified to leave new items list size="+completeList.size());
+        List filteredList = new ArrayList();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        for (Iterator iter = completeList.iterator(); iter.hasNext();)
+        {
+            HarvestedItemInfo infoObject = (HarvestedItemInfo) iter.next();
+            DCValue[] dateAccArr = infoObject.item.getMetadata("dc", "date", "accessioned", Item.ANY);
+            String lastModded = sdf.format(infoObject.datestamp);
+            if (dateAccArr != null && dateAccArr.length > 0)
+            {
+                for(DCValue date : dateAccArr)
+                {
+                    if(date != null && date.value != null)
+                    {
+                        // if it's never been changed
+                        if (date.value.startsWith(lastModded))
+                        {
+                            filteredList.add(infoObject);
+                            log.debug("adding : " + dateAccArr[0].value +" : " + lastModded + " : " + infoObject.handle);
+                        }
+                        else
+                        {
+                            log.debug("ignoring : " + dateAccArr[0].value +" : " + lastModded + " : " + infoObject.handle);
+                        }
+                    }
+                }
+                
+
+                
+            }
+            else
+            {
+                log.debug("no date accessioned, adding  : " + infoObject.handle);
+                filteredList.add(infoObject);
+            }
+        }
+
+        return filteredList;
     }
 }

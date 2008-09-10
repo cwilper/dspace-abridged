@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>org.dspace</groupId>
 		<artifactId>modules</artifactId>
-		<version>1.5.0</version>
+		<version>1.5.1</version>
 	</parent>
 
 	<profiles>
@@ -89,9 +89,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5</connection>
-		<developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5/dspace/modules/jspui</developerConnection>
-		<url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5/dspace/modules/jspui</url>
+		<connection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1</connection>
+		<developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace/modules/jspui</developerConnection>
+		<url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5_1/dspace/modules/jspui</url>
 	</scm>
 
 	<build>
@@ -131,6 +131,12 @@
 		<dependency>
 			<groupId>org.dspace</groupId>
 			<artifactId>dspace-jspui-api</artifactId>
+		</dependency>
+		<dependency>
+		   <groupId>javax.servlet</groupId>
+		   <artifactId>servlet-api</artifactId>
+		   <version>2.3</version>
+		   <scope>provided</scope>
 		</dependency>
 	</dependencies>
 

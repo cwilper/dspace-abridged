@@ -245,6 +245,9 @@ public class BrowseDAOOracle implements BrowseDAO
     {
         TableRowIterator tri = null;
 
+        if (column == null || value == null)
+            return 0;
+
         try
         {
             List paramsList = new ArrayList();
@@ -887,7 +890,7 @@ public class BrowseDAOOracle implements BrowseDAO
                 params.add(new Integer(limit));
         }
 
-        if (offset > -1)
+        if (offset > 0)
         {
             queryBuf.insert(0, "SELECT * FROM (");
             queryBuf.append(") WHERE rnum>?");

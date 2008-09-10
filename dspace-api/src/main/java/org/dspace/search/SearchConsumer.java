@@ -42,7 +42,6 @@
 
 package org.dspace.search;
 
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -104,17 +103,12 @@ public class SearchConsumer implements Consumer
                             + event.toString());
             return;
         }
-        DSpaceObject dso = null;
-        // EVENT FIXME This call to getSubjectOfEvent is catching a SQLException
-        // but other Consumers don't
-        try
-        {
-            dso = event.getSubject(ctx);
-        }
-        catch (SQLException se)
-        {
-        }
-
+        
+        DSpaceObject subject = event.getSubject(ctx);
+ 
+        DSpaceObject object = event.getObject(ctx);
+        
+        
         // If event subject is a Bundle and event was Add or Remove,
         // transform the event to be a Modify on the owning Item.
         // It could be a new bitstream in the TEXT bundle which
@@ -122,15 +116,15 @@ public class SearchConsumer implements Consumer
         int et = event.getEventType();
         if (st == Constants.BUNDLE)
         {
-            if ((et == Event.ADD || et == Event.REMOVE) && dso != null
-                    && ((Bundle) dso).getName().equals("TEXT"))
+            if ((et == Event.ADD || et == Event.REMOVE) && subject != null
+                    && ((Bundle) subject).getName().equals("TEXT"))
             {
                 st = Constants.ITEM;
                 et = Event.MODIFY;
-                dso = ((Bundle) dso).getItems()[0];
+                subject = ((Bundle) subject).getItems()[0];
                 if (log.isDebugEnabled())
                     log.debug("Transforming Bundle event into MODIFY of Item "
-                            + dso.getHandle());
+                            + subject.getHandle());
             }
             else
                 return;
@@ -141,20 +135,41 @@ public class SearchConsumer implements Consumer
         case Event.CREATE:
         case Event.MODIFY:
         case Event.MODIFY_METADATA:
-            if (dso == null)
+            if (subject == null)
                 log.warn(event.getEventTypeAsString() + " event, could not get object for "
                         + event.getSubjectTypeAsString() + " id="
                         + String.valueOf(event.getSubjectID())
                         + ", perhaps it has been deleted.");
             else
-                objectsToUpdate.add(dso);
+            {
+                log.debug("consume() adding event to update queue: " + event.toString());
+                objectsToUpdate.add(subject);
+            }
             break;
+            
+        case Event.REMOVE:
+        case Event.ADD:
+            if (object == null)
+                log.warn(event.getEventTypeAsString() + " event, could not get object for "
+                        + event.getObjectTypeAsString() + " id="
+                        + String.valueOf(event.getObjectID())
+                        + ", perhaps it has been deleted.");
+            else
+            {
+                log.debug("consume() adding event to update queue: " + event.toString());
+                objectsToUpdate.add(object);
+            }
+            break;
+            
         case Event.DELETE:
             String detail = event.getDetail();
             if (detail == null)
                 log.warn("got null detail on DELETE event, skipping it.");
             else
+            {
+                log.debug("consume() adding event to delete queue: " + event.toString());
                 handlesToDelete.add(detail);
+            }
             break;
         default:
             log
@@ -180,25 +195,24 @@ public class SearchConsumer implements Consumer
             // update the changed Items not deleted because they were on create list
             for (DSpaceObject iu : objectsToUpdate)
             {
-                if (iu.getType() != Constants.ITEM || ((Item) iu).isArchived())
+                /* we let all types through here and 
+                 * allow the search DSIndexer to make 
+                 * decisions on indexing and/or removal
+                 */
+                String hdl = iu.getHandle();
+                if (hdl != null && !handlesToDelete.contains(hdl))
                 {
-                    // if handle is NOT in list of deleted objects, index it:
-                    String hdl = iu.getHandle();
-                    if (hdl != null && !handlesToDelete.contains(hdl))
+                    try
                     {
-                        try
-                        {
-                            DSIndexer.indexContent(ctx, iu);
-                            if (log.isDebugEnabled())
-                                log.debug("Indexed "
-                                        + Constants.typeText[iu.getType()]
-                                        + ", id=" + String.valueOf(iu.getID())
-                                        + ", handle=" + hdl);
-                        }
-                        catch (Exception e)
-                        {
-                            log.error("Failed while indexing object: ", e);
-                        }
+                        DSIndexer.indexContent(ctx, iu, true);
+                        log.debug("Indexed "
+                             + Constants.typeText[iu.getType()]
+                             + ", id=" + String.valueOf(iu.getID())
+                             + ", handle=" + hdl);
+                    }
+                    catch (Exception e)
+                    {
+                        log.error("Failed while indexing object: ", e);
                     }
                 }
             }
