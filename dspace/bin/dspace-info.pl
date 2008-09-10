@@ -4,9 +4,9 @@
 #
 # dspace-info.pl
 #
-# Version: $Revision$
+# Version: $Revision: 2834 $
 #
-# Date: $Date$
+# Date: $Date: 2008-03-13 12:15:32 -0700 (Thu, 13 Mar 2008) $
 #
 # Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 # Institute of Technology.  All rights reserved.

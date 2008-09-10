@@ -1,9 +1,9 @@
 @REM
 @REM buildpath.bat
 @REM
-@REM Version: $Revision$
+@REM Version: $Revision: 1379 $
 @REM
-@REM Date: $Date$
+@REM Date: $Date: 2005-11-22 11:07:53 -0800 (Tue, 22 Nov 2005) $
 @REM
 @REM Copyright (c) 2005, Hewlett-Packard Company and Massachusetts
 @REM Institute of Technology.  All rights reserved.

@@ -1,9 +1,9 @@
 --
 -- database_schema_12-13.sql
 --
--- Version: $Revision$
+-- Version: $Revision: 2011 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2007-06-13 00:54:39 -0700 (Wed, 13 Jun 2007) $
 --
 -- Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
 -- Institute of Technology.  All rights reserved.

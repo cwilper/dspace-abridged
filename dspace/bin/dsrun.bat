@@ -1,9 +1,9 @@
 @REM
 @REM dsrun.bat
 @REM
-@REM Version: $Revision$
+@REM Version: $Revision: 1707 $
 @REM
-@REM Date: $Date$
+@REM Date: $Date: 2006-12-06 20:00:33 -0800 (Wed, 06 Dec 2006) $
 @REM
 @REM Copyright (c) 2005, Hewlett-Packard Company and Massachusetts
 @REM Institute of Technology.  All rights reserved.
