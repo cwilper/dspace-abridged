@@ -1,9 +1,9 @@
 /*
  * DSpaceMETSGenerator.java
  *
- * Version: $Revision: 1.14 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/05/02 05:30:55 $
+ * Date: $Date$
  *
  * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -206,8 +206,8 @@ public class DSpaceMETSGenerator extends AbstractGenerator
          		}
          		else if ("repository".equals(type))
      			{
-         			if (ConfigurationManager.getProperty("handle.prefix").equals(id))
-         			adapter = new RepositoryAdapter(context,contextPath);
+         			if (ConfigurationManager.getProperty("handle.prefix").equals(String.valueOf(id)))
+                        adapter = new RepositoryAdapter(context,contextPath);
      			}
          		
          	}
@@ -224,13 +224,19 @@ public class DSpaceMETSGenerator extends AbstractGenerator
 		Request request = ObjectModelHelper.getRequest(objectModel);
         String sections = request.getParameter("sections");
         String dmdTypes = request.getParameter("dmdTypes");
-        String amdTypes = request.getParameter("amdTypes");
+        String techMDTypes = request.getParameter("techMDTypes");
+        String rightsMDTypes = request.getParameter("rightsMDTypes");
+        String sourceMDTypes = request.getParameter("sourceMDTypes");
+        String digiprovMDTypes = request.getParameter("digiprovMDTypes");
         String fileGrpTypes = request.getParameter("fileGrpTypes");
         String structTypes = request.getParameter("structTypes");
         
         adapter.setSections(sections);
         adapter.setDmdTypes(dmdTypes);
-        adapter.setAmdTypes(amdTypes);
+        adapter.setTechMDTypes(techMDTypes);
+        adapter.setRightsMDTypes(rightsMDTypes);
+        adapter.setSourceMDTypes(sourceMDTypes);
+        adapter.setDigiProvMDTypes(digiprovMDTypes);
         adapter.setFileGrpTypes(fileGrpTypes);
         adapter.setStructTypes(structTypes);
 	}

@@ -3,7 +3,7 @@
    <groupId>org.dspace</groupId>
    <artifactId>dspace-parent</artifactId>
    <packaging>pom</packaging>
-   <version>1.5.1</version>
+   <version>1.5.2</version>
    <name>DSpace Parent Project</name>
    <url>http://projects.dspace.org</url>
 
@@ -18,6 +18,16 @@
             Java 1.5 is our officially endorsed build target
             platform.  
          -->
+         <plugin>
+			<artifactId>maven-release-plugin</artifactId>
+			<configuration>
+				<!--
+					During release:perform, enable the "addons" profile
+				-->
+				<releaseProfiles>addons</releaseProfiles>
+				<goals>deploy</goals>
+			</configuration>
+		 </plugin>
          <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
@@ -153,7 +163,7 @@
 
    <repositories>
       <repository>
-         <id>maven.dspace.org/snapshot</id>
+         <id>maven.dspace.org-snapshot</id>
          <name>DSpace Maven Snapshot Repository</name>
          <url>http://maven.dspace.org/snapshot</url>
          <releases>
@@ -499,8 +509,8 @@
    </licenses>
 
    <issueManagement>
-      <system>Sourceforge Issue Tracking</system>
-      <url>http://sourceforge.net/tracker/?group_id=19984</url>
+      <system>JIRA</system>
+      <url>http://jira.dspace.org/jira/browse/DS</url>
    </issueManagement>
 
    <mailingLists>
@@ -562,9 +572,13 @@
       <developer>
          <name>Andrea Bollini</name>
          <email>bollini at users.sourceforge.net</email>
+         <url>http://www.linkedin.com/in/andreabollini</url>
+         <organization>CILEA</organization>
+         <organizationUrl>http://www.cilea.it</organizationUrl>
          <roles>
             <role>commiter</role>
          </roles>
+         <timezone>+1</timezone>
       </developer>
       <developer>
          <name>Mark Diggory</name>
@@ -655,6 +669,13 @@
          </roles>
       </developer>
       <developer>
+         <name>Mark H. Wood</name>
+         <email>mwoodiupui at users.sourceforge.net</email>
+         <roles>
+            <role>commiter</role>
+         </roles>
+      </developer>
+      <developer>
          <name>Scott Yeadon</name>
          <email>syeadon at users.sourceforge.net</email>
          <roles>
@@ -703,9 +724,9 @@
       into the snapshot repository below.
    -->
    <scm>
-      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1</connection>
-      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1</developerConnection>
-      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5_1</url>
+      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.5.2</connection>
+      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.5.2</developerConnection>
+      <url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1.5.2</url>
    </scm>
 
    <!-- 
@@ -721,7 +742,7 @@
          <url>scp://maven.dspace.org/var/maven/release</url>
       </repository>
       <snapshotRepository>
-         <id>maven.dspace.org/snapshot</id>
+         <id>maven.dspace.org-snapshot</id>
          <name>DSpace Maven Repository</name>
          <url>scp://maven.dspace.org/var/maven/snapshot</url>
       </snapshotRepository>

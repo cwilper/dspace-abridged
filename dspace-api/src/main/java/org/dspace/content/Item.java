@@ -2018,21 +2018,7 @@ public class Item extends DSpaceObject
         for (int i = 0; i < bunds.length; i++)
         {
             Bundle mybundle = bunds[i];
-
-            Bitstream[] bs = mybundle.getBitstreams();
-
-            for (int j = 0; j < bs.length; j++)
-            {
-                Bitstream mybitstream = bs[j];
-
-                // change bitstream policies
-                AuthorizeManager.removeAllPolicies(ourContext, bs[j]);
-                AuthorizeManager.addPolicies(ourContext, newpolicies, bs[j]);
-            }
-
-            // change bundle policies
-            AuthorizeManager.removeAllPolicies(ourContext, mybundle);
-            AuthorizeManager.addPolicies(ourContext, newpolicies, mybundle);
+            mybundle.replaceAllBitstreamPolicies(newpolicies);
         }
     }
 
@@ -2162,6 +2148,35 @@ public class Item extends DSpaceObject
             
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
         }
+    }
+    
+    /**
+     * Check the bundle ORIGINAL to see if there are any uploaded files
+     * 
+     * @param item
+     * @return true if there is a bundle named ORIGINAL with one or more
+     *         bitstreams inside
+     * @throws SQLException
+     */
+    public boolean hasUploadedFiles() throws SQLException
+    {
+        Bundle[] bundles = getBundles("ORIGINAL");
+        if (bundles.length == 0)
+        {
+            // if no ORIGINAL bundle,
+            // return false that there is no file!
+            return false;
+        }
+        else
+        {
+            Bitstream[] bitstreams = bundles[0].getBitstreams();
+            if (bitstreams.length == 0)
+            {
+                // no files in ORIGINAL bundle!
+                return false;
+            }
+        }
+        return true;
     }
     
     /**

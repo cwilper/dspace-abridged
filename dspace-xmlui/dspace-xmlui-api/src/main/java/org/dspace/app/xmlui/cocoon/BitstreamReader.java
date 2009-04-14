@@ -1,9 +1,9 @@
 /*
  * BitsreamReader.java
  *
- * Version: $Revision: 1.5 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/08/08 20:59:54 $
+ * Date: $Date$
  *
  * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -62,6 +62,7 @@ import org.apache.cocoon.environment.http.HttpEnvironment;
 import org.apache.cocoon.environment.http.HttpResponse;
 import org.apache.cocoon.reading.AbstractReader;
 import org.apache.cocoon.util.ByteRange;
+import org.dspace.app.xmlui.utils.UsageEvent;
 import org.dspace.app.xmlui.utils.AuthenticationUtil;
 import org.dspace.app.xmlui.utils.ContextUtil;
 import org.dspace.authorize.AuthorizeException;
@@ -242,6 +243,32 @@ public class BitstreamReader extends AbstractReader implements Recyclable
                 }
             }
 
+            //if initial search was by sequence number and found nothing,
+            //then try to find bitstream by name (assuming we have a file name)
+            if((sequence > -1 && bitstream==null) && name!=null)
+            {
+                bitstream = findBitstreamByName(item,name);
+
+                //if we found bitstream by name, send a redirect to its new sequence number location
+                if(bitstream!=null)
+                {
+                    String redirectURL = "";
+
+                    //build redirect URL based on whether item has a handle assigned yet
+                    if(item.getHandle()!=null && item.getHandle().length()>0)
+                      redirectURL = request.getContextPath() + "/bitstream/handle/" + item.getHandle();
+                    else
+                      redirectURL = request.getContextPath() + "/bitstream/item/" + item.getID();
+
+            		redirectURL += "/" + name + "?sequence=" + bitstream.getSequenceID();
+
+            		HttpServletResponse httpResponse = (HttpServletResponse)
+            		objectModel.get(HttpEnvironment.HTTP_RESPONSE_OBJECT);
+            		httpResponse.sendRedirect(redirectURL);
+            		return;
+                }
+            }
+
             // Was a bitstream found?
             if (bitstream == null)
             {
@@ -316,6 +343,10 @@ public class BitstreamReader extends AbstractReader implements Recyclable
             }
             // Log that the bitstream has been viewed.
             log.info(LogManager.getHeader(context, "view_bitstream", "bitstream_id=" + bitstream.getID()));
+            
+            // Fire a view event for this bitstream
+            new UsageEvent().fire((Request) ObjectModelHelper.getRequest(objectModel), 
+                    context, UsageEvent.VIEW, Constants.BITSTREAM, bitstream.getID());
         }
         catch (SQLException sqle)
         {

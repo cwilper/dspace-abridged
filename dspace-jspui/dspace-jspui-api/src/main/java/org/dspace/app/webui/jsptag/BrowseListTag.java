@@ -1,9 +1,9 @@
 /*
  * BrowseListTag.java
  *
- * Version: $Revision: 1.30 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/04/05 02:15:45 $
+ * Date: $Date$
  *
  * Copyright (c) 2002-2005, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -73,7 +73,7 @@ import java.util.StringTokenizer;
  * Tag for display a list of items
  *
  * @author Robert Tansley
- * @version $Revision: 1.30 $
+ * @version $Revision$
  */
 public class BrowseListTag extends TagSupport
 {
@@ -427,6 +427,7 @@ public class BrowseListTag extends TagSupport
             // now output each item row
             for (int i = 0; i < items.length; i++)
             {
+            	out.print("<tr>"); 
                 // now prepare the XHTML frag for this division
                 String rOddOrEven;
                 if (i == highlightRow)
@@ -589,7 +590,7 @@ public class BrowseListTag extends TagSupport
 
                     out.print("<td headers=\"" + id + "\" class=\""
                         + rOddOrEven + "Row" + cOddOrEven[cOddOrEven.length - 2] + "Col\" nowrap>"
-                        + "<form method=get action=\"" + hrq.getContextPath() + "/tools/edit-item\">"
+                        + "<form method=\"get\" action=\"" + hrq.getContextPath() + "/tools/edit-item\">"
                         + "<input type=\"hidden\" name=\"handle\" value=\"" + items[i].getHandle() + "\" />"
                         + "<input type=\"submit\" value=\"Edit Item\" /></form>"
                         + "</td>");

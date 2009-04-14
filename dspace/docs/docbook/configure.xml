@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
   <chapter remap="h1">
-    <title>DSpace System Documentation: Configuration and Customization</title>
+    <title><anchor id="docbook-configure.html"/>DSpace System Documentation: Configuration and Customization</title>
     <para>There are a number of ways in which DSpace can be configured and/or customized:</para>
     <itemizedlist>
       <listitem>
@@ -35,7 +35,7 @@ property.name = property value
 property.name = word1 ${other.property.name} more words
 property2.name = ${dspace.dir}/rest/of/path
 </screen>
-        <para> Whenever you edit dspace.cfg in [dspace-source]/dspace/config/, you should then run &apos;ant init_configs&apos; in the directory [dspace-source]/dspace/target/dspace-1.5.0-build.dir so that any changes you may have made are reflected in the configuration files of other applications, for example Apache. You may then need to restart those applications, depending on what you changed. <table frame="none">
+        <para> Whenever you edit dspace.cfg in [dspace-source]/dspace/config/, you should then run &apos;ant init_configs&apos; in the directory [dspace-source]/dspace/target/dspace-1.5.2-build.dir so that any changes you may have made are reflected in the configuration files of other applications, for example Apache. You may then need to restart those applications, depending on what you changed. <table frame="none">
             <title>dspace.cfg Main Properties (Not Complete)</title>
             <tgroup cols="3">
               <colspec colname="c1" colwidth="33*"/>
@@ -195,7 +195,7 @@ stack"/>authentication stack. Authentication methods are called on in the order 
                     </para>
                   </entry>
                   <entry>
-                    <para>The Handle prefix for your site, <ulink url="install.html#handles">see the Handle section</ulink></para>
+                    <para>The Handle prefix for your site, <link linkend="docbook-install.html-handles">see the Handle section</link></para>
                   </entry>
                 </row>
                 <row>
@@ -225,7 +225,7 @@ stack"/>authentication stack. Authentication methods are called on in the order 
                     </para>
                   </entry>
                   <entry>
-                    <para>The location in the file system of asset (bitstream) store number <literal>n</literal>. When adding additional stores, start with 1 (<literal>assetstore.dir.1</literal> and count upwards. Always leave asset store zero (<literal>assetstore.dir</literal>). For more details, see <ulink url="storage.html#bitstreams">the Bitstream Storage section</ulink>.</para>
+                    <para>The location in the file system of asset (bitstream) store number <literal>n</literal>. When adding additional stores, start with 1 (<literal>assetstore.dir.1</literal> and count upwards. Always leave asset store zero (<literal>assetstore.dir</literal>). For more details, see <link linkend="docbook-storage.html-bitstreams">the Bitstream Storage section</link>.</para>
                   </entry>
                 </row>
                 <row>
@@ -240,7 +240,7 @@ stack"/>authentication stack. Authentication methods are called on in the order 
                     </para>
                   </entry>
                   <entry>
-                    <para>The asset store number to use for storing new bitstreams. For example, if <literal>assetstore.dir.1</literal> is <literal>/anotherdisk/store1</literal>, and <literal>assetstore.incoming</literal> is <literal>1</literal>, new bitstreams will be stored under <literal>/anotherdisk/store1</literal>. A value of <literal>0</literal> (zero) corresponds to <literal>assetstore.dir</literal>. For more details, see <ulink url="storage.html#bitstreams">the Bitstream Storage section</ulink>.</para>
+                    <para>The asset store number to use for storing new bitstreams. For example, if <literal>assetstore.dir.1</literal> is <literal>/anotherdisk/store1</literal>, and <literal>assetstore.incoming</literal> is <literal>1</literal>, new bitstreams will be stored under <literal>/anotherdisk/store1</literal>. A value of <literal>0</literal> (zero) corresponds to <literal>assetstore.dir</literal>. For more details, see <link linkend="docbook-storage.html-bitstreams">the Bitstream Storage section</link>.</para>
                   </entry>
                 </row>
                 <row>
@@ -252,7 +252,7 @@ stack"/>authentication stack. Authentication methods are called on in the order 
                     <para>/zone/home/user.domain</para>
                   </entry>
                   <entry>
-                    <para>The sets of SRB access parameters (see dspace.cfg) if one or more SRB accounts are used. The srb.xxx set would correspond to asset (bitstream) store number zero. The srb.xxx.n set would correspond to asset (bitstream) store number n. For more details, see <ulink url="storage.html#bitstreams">the Bitstream Storage section</ulink>.</para>
+                    <para>The sets of SRB access parameters (see dspace.cfg) if one or more SRB accounts are used. The srb.xxx set would correspond to asset (bitstream) store number zero. The srb.xxx.n set would correspond to asset (bitstream) store number n. For more details, see <link linkend="docbook-storage.html-bitstreams">the Bitstream Storage section</link>.</para>
                   </entry>
                 </row>
                 <row>
@@ -653,7 +653,7 @@ recent.submissions.sort-option = dateaccessioned
           <screen>
 recent.submissions.count = 5
 </screen>
-          <para>Now we need to set up the processors that the <ulink url="business.html#plugin">PluginManager</ulink> will load to actually perform the recent submissions query on the relevant pages.</para>
+          <para>Now we need to set up the processors that the <link linkend="docbook-business.html-plugin">PluginManager</link> will load to actually perform the recent submissions query on the relevant pages.</para>
           <para>Tell the community and collection pages that we are using the Recent Submissions code</para>
           <screen>
 plugin.sequence.org.dspace.plugin.CommunityHomeProcessor = \
@@ -677,7 +677,7 @@ itemmap.author.index = author
       <section remap="h3">
         <title><anchor id="docbook-configure.html-general-mediafilter" xreflabel="Configuring Media Filters"/>Configuring Media Filters</title>
         <para>Media or Format Filters are classes used to generate derivative or alternative versions of content or bitstreams within DSpace. For example, the PDF Media Filter will extract textual content from PDF bitstreams, the JPEG Media Filter can create thumbnails from image bitstreams.</para>
-        <para>Media Filters are configured as <ulink url="business.html#plugin">Named Plugins</ulink>, with each filter also having a separate configuration setting (in <literal>dspace.cfg</literal>) indicating which formats it can process. The default configuration is shown below.</para>
+        <para>Media Filters are configured as <link linkend="docbook-business.html-plugin">Named Plugins</link>, with each filter also having a separate configuration setting (in <literal>dspace.cfg</literal>) indicating which formats it can process. The default configuration is shown below.</para>
         <screen>
         #### Media Filter / Format Filter plugins (through
 	PluginManager) ####
@@ -720,7 +720,7 @@ s = GIF, JPEG, image/png
 </screen>
           <para>The enabled Media/Format Filters are named in the <literal>filter.plugins</literal> field above.</para>
         <para>Names are assigned to each filter using the <literal>plugin.named.org.dspace.app.mediafilter.FormatFilter</literal> field (e.g. by default the <literal>PDFFilter</literal> is named &quot;PDF Text Extractor&quot;).</para>
-        <para>Finally the appropriate <literal>filter.&lt;class path&gt;.inputFormats</literal> defines the vaild input formats which each filter can be applied to. These format names <emphasis role="bold">must match</emphasis> the <literal>short description</literal> field of the <ulink url="appendix.html#bitstreamformatregistry">Bitstream Format Registry</ulink>.</para>
+        <para>Finally the appropriate <literal>filter.&lt;class path&gt;.inputFormats</literal> defines the vaild input formats which each filter can be applied to. These format names <emphasis role="bold">must match</emphasis> the <literal>short description</literal> field of the <link linkend="docbook-appendix.html-bitstreamformatregistry">Bitstream Format Registry</link>.</para>
         <para>You can also implement more dynamic or configurable Media/Format Filters which extend <ulink url="business.html#selfnamedplugin">
             <literal>SelfNamedPlugin</literal>
           </ulink>
@@ -749,7 +749,7 @@ Messages"/>Wording of E-mail Messages</title>
     <section remap="h2">
       <title><anchor id="docbook-configure.html-general-registries" xreflabel="The
 Metadata and Bitstream Format Registries"/>The Metadata and Bitstream Format Registries</title>
-      <para>The <literal>[dspace]/config/registries</literal> directory contains three XML files. These are used to load the <emphasis>initial</emphasis> contents of the Metadata Schema Registry, <ulink url="appendix.html#dublincoreregistry">Dublin Core Metadata registry</ulink> and <ulink url="appendix.html#bitstreamformatregistry">Bitstream Format registry</ulink>. After the initial loading (performed by <literal>ant fresh_install</literal> above), the registries reside in the database; the XML files are not updated.</para>
+      <para>The <literal>[dspace]/config/registries</literal> directory contains three XML files. These are used to load the <emphasis>initial</emphasis> contents of the Metadata Schema Registry, <link linkend="docbook-appendix.html-dublincoreregistry">Dublin Core Metadata registry</link> and <link linkend="docbook-appendix.html-bitstreamformatregistry">Bitstream Format registry</link>. After the initial loading (performed by <literal>ant fresh_install</literal> above), the registries reside in the database; the XML files are not updated.</para>
       <para>In order to change the registries, you may adjust the XML files before the first installation of DSpace. On an allready running instance it is recommended to change bitstream registries via DSpace admin UI, but the metadata registries can be loaded again at any time from the XML files without difficult. The changes made via admin UI are not reflected in the XML files.</para>
       <section remap="h3">
         <title>Metadata Schema Registry</title>
@@ -773,7 +773,7 @@ Metadata and Bitstream Format Registries"/>The Metadata and Bitstream Format Reg
       <section remap="h3">
         <title>Metadata Format Registries</title>
         <para>The default metadata schema is Dublin Core, so DSpace is distributed with a default Dublin Core Metadata Registry. Currently, the system requires that every item have a Dublin Core record.</para>
-        <para>There is a set of Dublin Core Elements, which is used by the system and should not be removed or moved to another schema, see <ulink url="appendix.html#dublincoreregistry">Appendix: Default Dublin Core Metadata registry</ulink>.</para>
+        <para>There is a set of Dublin Core Elements, which is used by the system and should not be removed or moved to another schema, see <link linkend="docbook-appendix.html-dublincoreregistry">Appendix: Default Dublin Core Metadata registry</link>.</para>
         <para><emphasis role="bold">Note</emphasis>: altering a Metadata Registry has no effect on corresponding parts, e.g. item submission interface, item display, item import and vice versa. Every metadata element used in submission interface or item import must be registered before using it.</para>
         <para><emphasis role="bold">Note</emphasis> also that deleting a metadata element will delete all its corresponding values.</para>
         <para>If you wish to add more metadata elements, you can do this in one of two ways. Via the DSpace admin UI you may define new metadata elements in the different available schemas. But you may also modify the XML file (or provide an additional one), and re-import the data as follows:</para>
@@ -881,7 +881,7 @@ Submission License"/>The Default Submission License</title>
     <section remap="h2">
       <title><anchor id="docbook-configure.html-general-submission" xreflabel="Submission
 Configuration"/>Submission Configuration</title>
-      <para>Instructions for customizing and configuring the Item Submission user interface for either the JSP-UI or XML-UI are contained in the separate <ulink url="submission.html">Customizing and Configuring Submission User Interface</ulink> page.</para>
+      <para>Instructions for customizing and configuring the Item Submission user interface for either the JSP-UI or XML-UI are contained in the separate <link linkend="docbook-submission.html">Customizing and Configuring Submission User Interface</link> page.</para>
     </section>
     <section remap="h2">
       <title><anchor id="docbook-configure.html-xmlui" xreflabel="XMLUI Interface Customizations
@@ -1251,7 +1251,21 @@ Theme"/>Creating a New Theme</title>
         <para>
           <emphasis role="bold">4) Install theme and rebuild DSpace</emphasis>
         </para>
-        <para>Next rebuild &amp; deploy DSpace as described in the <ulink url="install.html">installation portion of the manual</ulink>, and ensure the theme has been installed as described in the previous section &quot;<ulink url="configure.html#xmlui-configure">Configuring Themes and Aspects</ulink>&quot;.</para>
+        <para>Next rebuild &amp; deploy DSpace as described in the <link linkend="docbook-install.html">installation portion of the manual</link>, and ensure the theme has been installed as described in the previous section &quot;<link linkend="docbook-configure.html-xmlui-configure">Configuring Themes and Aspects</link>&quot;.</para>
+      </section>
+      <section remap="h3">
+        <title><anchor id="docbook-configure.html-xmlui-staticcontent" xreflabel="Static Content"/>Adding Static Content</title>
+        <para>The XMLUI user interface supports the addition of globally static content (as well as static content within individual themes).</para>
+        <para>Globally static content can be placed in the <literal>[dspace-source]/dspace/modules/xmlui/src/main/webapp/static/</literal> directory. By default this directory only contains the default <literal>robots.txt</literal> file, which provides helpful site information to web spiders/crawlers. However, you may also add static HTML (<literal>*.html</literal>) content to this directory, as needed for your installation.</para>
+        <para>Any static HTML content you add to this directory may also reference static content (e.g. CSS, Javascript, Images, etc.) from the same <literal>[dspace-source]/dspace/modules/xmlui/src/main/webapp/static/</literal> directory.  You may reference other static content from your static HTML files similar to the following:</para>
+        <screen>
+  &lt;link href=&quot;./static/mystyle.css&quot;
+  rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
+  &lt;img src=&quot;./static/images/static-image.gif&quot;
+  alt=&quot;Static image in /static/images/ directory&quot;/&gt;
+  &lt;img src=&quot;./static/static-image.jpg&quot;
+  alt=&quot;Static image in /static/ directory&quot;/&gt;
+ </screen>
       </section>
     </section>
     <section remap="h2">
@@ -1591,7 +1605,7 @@ Multilingual Support"/>Configuring Multilingual Support</title>
 pages"/>Customizing the JSP pages</title>
         <para>The JSPUI interface is implemented using Java Servlets which handle the business logic, and JavaServer Pages (JSPs) which produce the HTML pages sent to an end-user. Since the JSPs are much closer to HTML than Java code, altering the look and feel of DSpace is relatively easy.</para>
         <para>To make it even easier, DSpace allows you to &apos;override&apos; the JSPs included in the source distribution with modified versions, that are stored in a separate place, so when it comes to updating your site with a new DSpace release, your modified versions will not be overwritten. It should be possible to dramatically change the look of DSpace to suit your organization by just changing the CSS style file and the site &apos;skin&apos; or &apos;layout&apos; JSPs in <literal>jsp/layout</literal>; if possible, it is recommended you limit local customizations to these files to make future upgrades easier.</para>
-        <para>You can also easily edit the text that appears on each JSP page by editing the dictionary file. However, note that unless you change the entry in all of the different language message files, users of other languages will still see the default text for their language. See <ulink url="application.html#i18n">internationalization</ulink>.</para>
+        <para>You can also easily edit the text that appears on each JSP page by editing the dictionary file. However, note that unless you change the entry in all of the different language message files, users of other languages will still see the default text for their language. See <link linkend="docbook-application.html-i18n">internationalization</link>.</para>
         <para>Note that the data (attributes) passed from an underlying Servlet to the JSP may change between versions, so you may have to modify your customized JSP to deal with the new data.</para>
         <para>Thus, if possible, it is recommended you limit your changes to the &apos;layout&apos; JSPs and the stylesheet.</para>
         <para>The JSPs are available in one of two places:</para>
@@ -1651,7 +1665,7 @@ pages"/>Customizing the JSP pages</title>
         <para>Heavy use is made of a style sheet, <literal>styles.css.jsp</literal>. If you make edits, copy the local version to <literal>[jsp.custom-dir]/dspace/modules/jspui/src/main/webapp/styles.css.jsp</literal>, and it will be used automatically in preference to the default, as described above.</para>
         <para>Fonts and colors can be easily changed using the stylesheet. The stylesheet is a JSP so that the user&apos;s browser version can be detected and the stylesheet tweaked accordingly.</para>
         <para>The &apos;layout&apos; of each page, that is, the top and bottom banners and the navigation bar, are determined by the JSPs <literal>/layout/header-*.jsp</literal> and <literal>/layout/footer-*.jsp</literal>. You can provide modified versions of these (in <literal>[jsp.custom-dir]/dspace/modules/jspui/src/main/webapp/layout</literal>), or define more styles and apply them to pages by using the &quot;style&quot; attribute of the <literal>dspace:layout</literal> tag.</para>
-        <para>After you&apos;ve customized your JSPs, <emphasis role="bold">you must rebuild the DSpace Web application</emphasis>. If you haven&apos;t already built and installed it, follow the <ulink url="install.html">install</ulink> directions. Otherwise, follow the steps below:</para>
+        <para>After you&apos;ve customized your JSPs, <emphasis role="bold">you must rebuild the DSpace Web application</emphasis>. If you haven&apos;t already built and installed it, follow the <link linkend="docbook-install.html">install</link> directions. Otherwise, follow the steps below:</para>
         <orderedlist>
           <listitem>
             <para> Rebuild the DSpace installation package by running the following command from your <literal>[dspace-source]/dspace/</literal> directory:</para>
@@ -1884,7 +1898,7 @@ Authentication"/>Custom Authentication</title>
           <para>The X.509 authentication method uses an X.509 certificate sent by the client to establish his/her identity. It requires the client to have a personal Web certificate installed on their browser (or other client software) which is issued by a Certifying Authority (CA) recognized by the web server.</para>
           <orderedlist>
             <listitem>
-              <para> See the <ulink url="install.html#https">HTTPS installation instructions</ulink> to configure your Web server. If you are using HTTPS with Tomcat, note that the <literal>&lt;Connector&gt;</literal> tag <emphasis>must</emphasis> include the attribute <literal>clientAuth=&quot;true&quot;</literal> so the server requests a personal Web certificate from the client.</para>
+              <para> See the <link linkend="docbook-install.html-https">HTTPS installation instructions</link> to configure your Web server. If you are using HTTPS with Tomcat, note that the <literal>&lt;Connector&gt;</literal> tag <emphasis>must</emphasis> include the attribute <literal>clientAuth=&quot;true&quot;</literal> so the server requests a personal Web certificate from the client.</para>
             </listitem>
             <listitem>
               <para> Add the <literal>org.dspace.authenticate.X509Authentication</literal> plugin <emphasis>first</emphasis> to the list of stackable authentication methods in the value of the configuration key <literal>plugin.sequence.org.dspace.authenticate.AuthenticationMethod</literal><emphasis>E.g.:</emphasis></para>
@@ -2115,12 +2129,12 @@ Crosswalks"/>Activating Additional OAI-PMH Crosswalks</title>
       </section>
       <section remap="h3">
         <title><anchor id="docbook-configure.html-packager" xreflabel="Configuring Packager Plugins"/>Configuring Packager Plugins</title>
-        <para>Package ingester plugins are configured as <ulink url="business.html#plugin">named or self-named plugins</ulink> for the interface <literal>org.dspace.content.packager.PackageIngester</literal>. Package disseminator plugins are configured as <ulink url="business.html#plugin">named or self-named plugins</ulink> for the interface <literal>org.dspace.content.packager.PackageDisseminator</literal>.</para>
-        <para>You can add names for the existing plugins, and add new plugins, by altering these configuration properties. See the <ulink url="business.html#plugin">Plugin Manager</ulink> architecture for more information about plugins.</para>
+        <para>Package ingester plugins are configured as <link linkend="docbook-business.html-plugin">named or self-named plugins</link> for the interface <literal>org.dspace.content.packager.PackageIngester</literal>. Package disseminator plugins are configured as <link linkend="docbook-business.html#plugin">named or self-named plugins</link> for the interface <literal>org.dspace.content.packager.PackageDisseminator</literal>.</para>
+        <para>You can add names for the existing plugins, and add new plugins, by altering these configuration properties. See the <link linkend="docbook-business.html-plugin">Plugin Manager</link> architecture for more information about plugins.</para>
       </section>
       <section remap="h3">
         <title><anchor id="docbook-configure.html-crosswalk" xreflabel="Configuring Crosswalk Plugins"/>Configuring Crosswalk Plugins</title>
-        <para>Ingestion crosswalk plugins are configured as <ulink url="business.html#plugin">named or self-named plugins</ulink> for the interface <literal>org.dspace.content.crosswalk.IngestionCrosswalk</literal>. Dissemination crosswalk plugins are configured as <ulink url="business.html#plugin">named or self-named plugins</ulink> for the interface <literal>org.dspace.content.crosswalk.DisseminationCrosswalk</literal>.</para>
+        <para>Ingestion crosswalk plugins are configured as <link linkend="docbook-business.html-plugin">named or self-named plugins</link> for the interface <literal>org.dspace.content.crosswalk.IngestionCrosswalk</literal>. Dissemination crosswalk plugins are configured as <link linkend="docbook-business.html#plugin">named or self-named plugins</link> for the interface <literal>org.dspace.content.crosswalk.DisseminationCrosswalk</literal>.</para>
         <para>You can add names for existing crosswalks, add new plugin classes, and add new configurations for the configurable crosswalks as noted below.</para>
         <section remap="h4">
           <title><anchor id="docbook-configure.html-mods" xreflabel="Configurable MODS dissemination
@@ -2283,6 +2297,122 @@ crosswalk.qdc.schemaLocation.QDC  = \
           <para> Add the <literal>-l</literal> option to to pass the ingestion crosswalk a list of elements instead of a whole document, as if the List form of the ingest() method had been called. This is needed to test ingesters for formats like DC that get called with lists of elements instead of a root element.</para>
         </section>
       </section>
+
+    <section remap="h3">
+    <title> XPDF Filter </title>
+    <para>These filters handle PDF resources with more sophisticated tools that can produce thumbnail images of PDF and 3D PDF files, and do much faster (and more complete) text extraction as well.</para>
+    <section remap="h4">
+    <title>
+      <emphasis role="bold">Installation</emphasis>
+    </title>
+    <para>There is probably a very complicated way to do this correctly by adding new Maven modules and POMs and things, but here is what I did, being in a hurry and just wanting immediate results (and <emphasis>not</emphasis> caring about maintaining a DSpace installation, upgrading, etc):</para>
+    <orderedlist>
+      <listitem>
+        <para>  Obtain a <emphasis>source</emphasis> distribution of DSpace 1.5.1, configure, and build it.</para>
+      </listitem>
+      <listitem>
+        <para>  Edit configuration lines in dspace.cfg</para>
+      </listitem>
+      <listitem>
+        <para> Add -Pxpdf-mediafilter-support to maven build</para>
+      </listitem>
+      <listitem>
+        <para>  Build and install.</para>
+      </listitem>
+    </orderedlist>
+    </section>
+    <section remap="h4">
+      <title>
+        <emphasis role="bold">Install XPDF tools</emphasis>
+      </title>
+      <para>First, you need to <ulink url="http://www.foolabs.com/xpdf/">download the XPDF suite</ulink> and install it on your server, e.g. under /usr/local/bin.</para>
+      <para>The only tools you <emphasis>really</emphasis> need are:</para>
+      <itemizedlist>
+        <listitem>
+          <para>  pdftoppm</para>
+        </listitem>
+        <listitem>
+          <para>  pdfinfo</para>
+        </listitem>
+        <listitem>
+          <para>  pdftotext</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section remap="h4">
+      <title>
+        <emphasis role="bold">Installation within DSpace</emphasis>
+      </title>
+      <section remap="h5">
+        <title>
+          <emphasis role="bold">Fetch and install jai_imageio JAR</emphasis>
+        </title>
+        <para>Download the jai_imageio library version 1.0_01 or 1.1, find it with google if <ulink url="http://download.java.net/media/jai-imageio/builds/release/1_0_01/jai_imageio-1_0_01-lib-linux-i586.tar.gz">this link</ulink> doesn&apos;t give satisfactory results.</para>
+        <para>Install it in your local Maven repository with the command (assuming the library is installed locally at <emphasis role="bold">/opt/facade/lib/jai_imageio.jar</emphasis>):</para>
+	<screen>
+        mvn install:install-file  \
+         -Dfile=/opt/facade/lib/jai_imageio.jar               \
+         -DgroupId=com.sun.media                              \
+         -DartifactId=jai_imageio                             \
+         -Dversion=1.0_01                                     \
+         -Dpackaging=jar                                      \
+         -DgeneratePom=true
+	</screen>
+      </section>
+      <section remap="h5">
+        <title>
+          <emphasis role="bold">Edit DSpace Configuration</emphasis>
+        </title>
+        <para>First, be sure there is a value for thumbnail.maxwidth and that it corresponds to the size you want for preview images for the UI, e.g.: (<emphasis>NOTE:</emphasis> this code doesn&apos;t pay any attention to thumbnail.maxheight but it&apos;s best to set it too so the other thumbnail filters make square images.)</para>
+	<screen>
+        # maximum width and height of generated thumbnails
+        thumbnail.maxwidth  300
+        thumbnail.maxheight 300
+        </screen>
+        <para>Now, add the absolute paths of the XPDF tools you installed:</para>
+	<screen>
+        xpdf.path.pdftotext = /var/local/bin/pdftotext
+        xpdf.path.pdftoppm = /var/local/bin/pdftoppm
+        xpdf.path.pdfinfo = /var/local/bin/pdfinfo
+	</screen>
+        <para>Also be sure the mediafilter configuration includes the new filters, e.g: (New sections are in bold)</para>
+	<screen>
+        filter.plugins = \
+         <emphasis role="bold">PDF Text Extractor,</emphasis> \
+         <emphasis role="bold">PDF Thumbnail,</emphasis> \
+         HTML Text Extractor, \
+         Word Text Extractor, \
+         JPEG Thumbnail
+        plugin.named.org.dspace.app.mediafilter.FormatFilter = \
+         <emphasis role="bold">org.dspace.app.mediafilter.XPDF2Text = PDF Text Extractor, \</emphasis>
+         <emphasis role="bold">org.dspace.app.mediafilter.XPDF2Thumbnail = PDF Thumbnail,</emphasis> \
+         org.dspace.app.mediafilter.HTMLFilter = HTML Text Extractor, \
+         org.dspace.app.mediafilter.WordFilter = Word Text Extractor, \
+         org.dspace.app.mediafilter.JPEGFilter = JPEG Thumbnail, \
+         org.dspace.app.mediafilter.BrandedPreviewJPEGFilter = Branded Preview JPEG
+	</screen>
+        <para>#Configure each filter&apos;s input format(s)</para>
+        <para>....</para>
+        <screen>
+          <emphasis role="bold">filter.org.dspace.app.mediafilter.XPDF2Thumbnail.inputFormats = Adobe PDF</emphasis>
+          <emphasis role="bold">filter.org.dspace.app.mediafilter.XPDF2Text.inputFormats = Adobe PDF</emphasis>
+          <emphasis role="bold">Add -Pxpdf-mediafilter-support to maven build</emphasis>
+        </screen>
+        <para>Edit the POM for the <emphasis role="bold">dspace-api</emphasis> module. Within the &lt;dependencies&gt; element, add this new element:</para>
+        <screen>
+	%mvn -Pxpdf-mediafilter-support package
+	</screen>
+      </section>
+      <section remap="h5">
+        <title>
+          <emphasis role="bold">Build and Install</emphasis>
+        </title>
+        <para>Follow the usual DSpace installation/update procedure.</para>
+        <para>Retrieved from &quot;<ulink url="http://libstaff.mit.edu/facade/index.php/DSpace_PDF_Media_Filters">http://libstaff.mit.edu/facade/index.php/DSpace_PDF_Media_Filters</ulink>&quot;</para>
+      </section>
+    </section>
+  </section>
+
       <section remap="h3">
         <title><anchor id="docbook-configure.html-mediafilters" xreflabel="Creating a new Media/Format
 Filter"/>Creating a new Media/Format Filter</title>
@@ -2302,7 +2432,7 @@ Filter"/>Creating a new Media/Format Filter</title>
 	MediaFilter</literal>
 
           </screen>
-            <para>You must give your new filter a &quot;name&quot;, by adding it and its name to the <literal>plugin.named.org.dspace.app.mediafilter.FormatFilter</literal> field in <literal>dspace.cfg</literal>. In addition to naming your filter, make sure to specify its input formats in the <literal>filter.&lt;class path&gt;.inputFormats</literal> config item. Note the input formats must match the <literal>short description</literal> field in the <ulink url="appendix.html#bitstreamformatregistry">Bitstream Format Registry</ulink> (i.e. <literal>bitstreamformatregistry</literal> table).</para>
+            <para>You must give your new filter a &quot;name&quot;, by adding it and its name to the <literal>plugin.named.org.dspace.app.mediafilter.FormatFilter</literal> field in <literal>dspace.cfg</literal>. In addition to naming your filter, make sure to specify its input formats in the <literal>filter.&lt;class path&gt;.inputFormats</literal> config item. Note the input formats must match the <literal>short description</literal> field in the <link linkend="docbook-appendix.html-bitstreamformatregistry">Bitstream Format Registry</link> (i.e. <literal>bitstreamformatregistry</literal> table).</para>
           <screen>
 
             <literal> plugin.named.org.dspace.app.mediafilter.FormatFilter = \
@@ -2329,7 +2459,7 @@ Filter"/>Creating a new Media/Format Filter</title>
 	SelfNamedPlugin implements FormatFilter</literal>
 
           </screen>
-            <para>Since <literal>SelfNamedPlugins</literal> are self-named (as stated), they must provide the various names the plugin uses by defining a <ulink url="business.html#pluginmethods">getPluginNames()</ulink> method. Generally speaking, each &quot;name&quot; the plugin uses should correspond to a different type of filter it implements (e.g. &quot;Word2PDF&quot; and &quot;Excel2CSV&quot; are two good names for a complex media filter which performs both Word to PDF and Excel to CSV conversions).</para>
+            <para>Since <literal>SelfNamedPlugins</literal> are self-named (as stated), they must provide the various names the plugin uses by defining a <link linkend="docbook-business.html-pluginmethods">getPluginNames()</link> method. Generally speaking, each &quot;name&quot; the plugin uses should correspond to a different type of filter it implements (e.g. &quot;Word2PDF&quot; and &quot;Excel2CSV&quot; are two good names for a complex media filter which performs both Word to PDF and Excel to CSV conversions).</para>
           <para>Self-Named Media/Format Filters are also configured differently in <literal>dspace.cfg</literal>. Below is a general template for a Self Named Filter (defined by an imaginary <literal>MyComplexMediaFilter</literal> class, which can perform both Word to PDF and Excel to CSV conversions):</para>
           <screen>
 
@@ -2494,7 +2624,40 @@ ant index
 [dspace]/bin/dsrun org.dspace.browse.IndexBrowse -i
 </screen>
       </section>
+      <section remap="h3">
+      	<title>
+      		<anchor id="docbook-configure.html-usage-instrumentation" xreflabel="Configuring Usage Instrumentation Plugins"></anchor>Configuring Usage Instrumentation Plugins</title>
+			<para>A usage instrumentation plugin is configured as a
+				<link linkend="docbook-business.html-plugin">singleton plugin</link>
+				for the abstract class <code>org.dspace.app.statistics.AbstractUsageEvent</code>.
+			</para>
+			<section remap="h4">
+				<title>
+					<anchor id="docbook-configure.html-usage-insturmentation-passive" xreflabel="The Passive Plugin"></anchor>
+					The Passive Plugin
+				</title>
+				<para>
+					The Passive plugin is provided as the class <code>org.dspace.app.statistics.PassiveUsageEvent</code>.  It absorbs events without effect.  Use the Passive plugin when you have no use for usage event postings.  This is the default if no plugin is configured.
+				</para>
+			</section>
+			<section remap="h4">
+				<title>
+					<anchor id="docbook-configure.html-usage-instrumentation-tsv" xreflabel="The TSV File Logger Plugin"></anchor>
+					The Tab File Logger Plugin
+				</title>
+				<para>
+					The Tab File Logger plugin is provided as the class <code>org.dspace.app.statistics.UsageEventTabFileLogger</code>.  It writes event records to a file in tab-separated column format.  If left unconfigured, an error will be noted in the DSpace log and no file will be produced.  To specify the file path, provide an absolute path as the value for <code>usageEvent.tabFileLogger.file</code> in <code>dspace.cfg</code>.
+				</para>
+			</section>
+			<section remap="h4">
+				<title>
+					<anchor id="docbook-configure.html-usage-instrumentation-xml" xreflabel="The XML Logger Plugin"></anchor>
+					The XML Logger Plugin
+				</title>
+				<para>
+					The XML Logger plugin is provided as the class <code>org.dspace.app.statistics.UsageEventXMLLogger</code>.  It writes event records to a file in a simple XML-like format.  If left unconfigured, an error will be noted in the DSpace log and no file will be produced.  To specify the file path, provide an absolute path as the value for <code>usageEvent.xmlLogger.file</code> in <code>dspace.cfg</code>.
+				</para>
+			</section>
+      </section>
     </section>
   </chapter>
-
-

@@ -2,9 +2,9 @@
   <!--
   messages.xml
 
-  Version: $Revision: 1.16 $
+  Version: $Revision$
  
-  Date: $Date: 2006/08/08 22:00:45 $
+  Date: $Date$
  
   Copyright (c) 2002-2005, Hewlett-Packard Company and Massachusetts
   Institute of Technology.  All rights reserved.
@@ -221,7 +221,7 @@
 	<!-- org.dspace.app.xmlui.artifactbrowser.CommunityViewer.java -->
 	<message key="xmlui.ArtifactBrowser.CommunityViewer.search_scope">Search Scope</message>
 	<message key="xmlui.ArtifactBrowser.CommunityViewer.all_of_dspace">All of DSpace</message>
-	<message key="xmlui.ArtifactBrowser.CommunityViewer.full_text_search">Search within this community and it's collections:</message>
+	<message key="xmlui.ArtifactBrowser.CommunityViewer.full_text_search">Search within this community and its collections:</message>
 	<message key="xmlui.ArtifactBrowser.CommunityViewer.head_browse">Browse by</message>
 	<message key="xmlui.ArtifactBrowser.CommunityViewer.browse_titles">Titles</message>
 	<message key="xmlui.ArtifactBrowser.CommunityViewer.browse_authors">Authors</message>
@@ -428,7 +428,7 @@
 	<message key="xmlui.EPerson.LoginChooser.trail">Choose Login</message>
 	<message key="xmlui.EPerson.LoginChooser.head1">Choose a Login Method</message>
 	<message key="xmlui.EPerson.LoginChooser.para1">Log in via:</message>
-	<message key="au.edu.mq.melcoe.mams.dspace.eperson.ShibAuthentication.title">Shibboleth Authentication</message>
+	<message key="org.dspace.authenticate.ShibAuthentication.title">Shibboleth Authentication</message>
 	<message key="org.dspace.eperson.LDAPAuthentication.title">LDAP Authentication</message>
 	<message key="org.dspace.eperson.PasswordAuthentication.title">Password Authentication</message>
 	<message key="org.dspace.eperson.X509Authentication.title">Web Certificate Authentication</message>
@@ -652,6 +652,7 @@
 	<message key="xmlui.Submission.submit.UploadStep.file">File</message>
 	<message key="xmlui.Submission.submit.UploadStep.file_help">Please enter the full path of the file on your computer corresponding to your item. If you click "Browse...", a new window will allow you to select the file from your computer.</message>
 	<message key="xmlui.Submission.submit.UploadStep.file_error">The item must contain at least one file.</message>
+	<message key="xmlui.Submission.submit.UploadStep.upload_error">There was a problem uploading your file.  Either the filename you entered was incorrect, there was a network problem which prevented the file from reaching us correctly, or you have attempted to upload a file format marked for internal system use only.  Please try again.</message>
 	<message key="xmlui.Submission.submit.UploadStep.description">File Description</message>
 	<message key="xmlui.Submission.submit.UploadStep.description_help">Optionally, provide a brief description of the file, for example "<i>Main article</i>", or "<i>Experiment data readings</i>".</message>
 	<message key="xmlui.Submission.submit.UploadStep.submit_upload">Upload file &amp; add another</message>
@@ -832,7 +833,7 @@
 	<message key="xmlui.administrative.ItemExport.item.not.found">The item requested was not found.</message>
 	<message key="xmlui.administrative.ItemExport.collection.not.found">The collection requested was not found.</message>
 	<message key="xmlui.administrative.ItemExport.community.not.found">The community requested was not found.</message>
-	<message key="xmlui.administrative.ItemExport.export.success">The item was exported successfully.  You should receive an e-mail when the archive is ready for download.  You can also use the 'My Exports' link to view a list of your available archives.</message>
+	<message key="xmlui.administrative.ItemExport.item.success">The item was exported successfully.  You should receive an e-mail when the archive is ready for download.  You can also use the 'My Exports' link to view a list of your available archives.</message>
 	<message key="xmlui.administrative.ItemExport.collection.success">The collection was exported successfully.  You should receive an e-mail when the archive is ready for download.  You can also use the 'My Exports' link to view a list of your available archives.</message>
 	<message key="xmlui.administrative.ItemExport.community.success">The community was exported successfully.  You should receive an e-mail when the archive is ready for download.  You can also use the 'My Exports' link to view a list of your available archives.</message>
 	<message key="xmlui.administrative.ItemExport.available.head">Available export archives for download:</message>
@@ -1030,7 +1031,7 @@
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.name_help">A unique name for this format, (e.g. Microsoft Word XP or Microsoft Word 2000)</message>
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.name_error">The name field is required.</message>
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.mimetype">MIME Type</message>
-	<message key="xmlui.administrative.registries.EditBitstreamFormat.mimetype.help">The MIME type associated with this format, does not have to be unique.</message>
+	<message key="xmlui.administrative.registries.EditBitstreamFormat.mimetype_help">The MIME type associated with this format, does not have to be unique.</message>
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.description">Description</message>
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.support">Support level</message>
 	<message key="xmlui.administrative.registries.EditBitstreamFormat.support_help">The level of support your institution pledges for this format.</message>
@@ -1492,7 +1493,6 @@
 	<message key="xmlui.administrative.ControlPanel.head">Control Panel</message>
 	<message key="xmlui.administrative.ControlPanel.option_java">Java Information</message>
 	<message key="xmlui.administrative.ControlPanel.option_dspace">DSpace Configuration</message>
-	<message key="xmlui.administrative.ControlPanel.option_knots">Web Continuations</message>
 	<message key="xmlui.administrative.ControlPanel.option_alerts">System-wide Alerts</message>
 	<message key="xmlui.administrative.ControlPanel.hours">{0} h</message>
 	<message key="xmlui.administrative.ControlPanel.minutes">{0} m</message>
@@ -1524,13 +1524,6 @@
 	<message key="xmlui.administrative.ControlPanel.mail_from_address">From E-mail Address</message>
 	<message key="xmlui.administrative.ControlPanel.mail_feedback_recipient">Feedback Recipient</message>
 	<message key="xmlui.administrative.ControlPanel.mail_admin">General Site Administration E-mail</message>
-	<message key="xmlui.administrative.ControlPanel.knots_head">Web Continuations</message>
-	<message key="xmlui.administrative.ControlPanel.knots_column1">Interpreter</message>
-	<message key="xmlui.administrative.ControlPanel.knots_column2">Last Access</message>
-	<message key="xmlui.administrative.ControlPanel.knots_column3">State</message>
-	<message key="xmlui.administrative.ControlPanel.knots_expired">Expired</message>
-	<message key="xmlui.administrative.ControlPanel.knots_active">Active</message>
-	<message key="xmlui.administrative.ControlPanel.knots_none">There are no active continuations.</message>
 	<message key="xmlui.administrative.ControlPanel.alerts_head">System-wide Alerts</message>
 	<message key="xmlui.administrative.ControlPanel.alerts_warning"><strong>Warning for load balanced systems</strong>: System-wide alerts are only effective for the node on which it is activated. You need to ensure that each node in the set receives the activate alert command.</message>
 	<message key="xmlui.administrative.ControlPanel.alerts_message_label">Alert message</message>
@@ -1550,15 +1543,17 @@
 	<message key="xmlui.administrative.ControlPanel.alerts_submit_activate">Activate</message>
 	<message key="xmlui.administrative.ControlPanel.alerts_submit_deactivate">Deactivate</message>
 	<message key="xmlui.administrative.ControlPanel.activity_head">Current Activity ({0} pages maximum)</message>
+	<message key="xmlui.administrative.ControlPanel.stop_anonymous">STOP recording anonymous activity.</message>
+	<message key="xmlui.administrative.ControlPanel.start_anonymous">START recording anonymous activity.</message>
+	<message key="xmlui.administrative.ControlPanel.stop_bot">STOP recording bot activity.</message>
+	<message key="xmlui.administrative.ControlPanel.start_bot">START recording bot activity.</message>
 	<message key="xmlui.administrative.ControlPanel.activity_sort_time">Time Stamp</message>
 	<message key="xmlui.administrative.ControlPanel.activity_sort_user">User</message>
 	<message key="xmlui.administrative.ControlPanel.activity_sort_ip">IP Address</message>
 	<message key="xmlui.administrative.ControlPanel.activity_sort_url">URL Page</message>
 	<message key="xmlui.administrative.ControlPanel.activity_sort_Agent">User-Agent</message>
 	<message key="xmlui.administrative.ControlPanel.activity_anonymous">Anonymous {0}</message>	
-	<message key="xmlui.administrative.ControlPanel.activity_hideself">Hide my page views</message>
-	<message key="xmlui.administrative.ControlPanel.activity_showself">Show my page views</message>
-	<message key="xmlui.administrative.ControlPanel.activity_none">Other than yourself, there have been no page views in the past {0} pages.</message>
+	<message key="xmlui.administrative.ControlPanel.activity_none">No page views have been recorded.</message>
 	
 	<message key="xmlui.administrative.ControlPanel.select_panel">Use the tabs above to select the information to display</message>
 	
@@ -1698,5 +1693,80 @@
 	
 	<!-- tag used to handle the empty textarea tag added 09/28/2006 -->
 	<message key="xmlui.dri2xhtml.default.textarea.value"> </message>
-	
+
+  <!--###### File Format MIME Type Mappings ######-->
+
+  <!-- Application-based formats -->
+  <message key="xmlui.dri2xhtml.mimetype.application/marc">MARC record</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/mathematica">Mathematica</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/msword">Microsoft Word</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/octet-stream">Unknown</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/pdf">PDF</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/postscript">Postscript</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/sgml">SGML</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.ms-excel">Microsoft Excel</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.ms-powerpoint">Microsoft PowerPoint</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.ms-project">Microsoft Project</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.database">OpenOffice Base</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.formula">OpenOffice Math</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.graphics">OpenOffice Draw</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.presentation">OpenOffice Impress</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.spreadsheet">OpenOffice Calc</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.oasis.opendocument.text">OpenOffice Writer</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.openxmlformats-officedocument.presentationml.presentation">Microsoft PowerPoint 2007</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">Microsoft Excel 2007</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.openxmlformats-officedocument.wordprocessingml.document">Microsoft Word 2007</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.sun.xml.calc">OpenOffice Calc (1.x)</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.sun.xml.draw">OpenOffice Draw (1.x)</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.sun.xml.impress">OpenOffice Impress (1.x)</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.sun.xml.writer.global">OpenOffice Writer (1.x)</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/vnd.visio">Microsoft Visio</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/wordperfect5.1">WordPerfect</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-dvi">TeX DVI</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-filemaker">FileMaker Pro</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-java-applet">Java applet</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-latex">LaTeX</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-photoshop">Photoshop</message>
+  <message key="xmlui.dri2xhtml.mimetype.application/x-tex">TeX</message>
+
+  <!-- Audio-based formats -->
+  <message key="xmlui.dri2xhtml.mimetype.audio/basic">Basic Audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/flac">FLAC Audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/m4a">AAC audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/m4a-latm">AAC audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/mpeg">mp3 audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-aiff">AIFF audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-mpeg">MPEG Audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-ms-wma">WMA Audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-ms-wmv">WMV Audio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-ogg">Ogg Vorbis</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-pn-realaudio">RealAudio</message>
+  <message key="xmlui.dri2xhtml.mimetype.audio/x-wav">WAV audio</message>
+
+  <!-- Image-based formats -->
+  <message key="xmlui.dri2xhtml.mimetype.image/gif">GIF image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/jp2">JPEG 2000 image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/jpeg">JPEG image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/png">PNG image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/tiff">TIFF image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/x-ms-bmp">BMP image</message>
+  <message key="xmlui.dri2xhtml.mimetype.image/x-photo-cd">Photo CD</message>
+
+  <!-- Text-based formats -->
+  <message key="xmlui.dri2xhtml.mimetype.text/css">CSS file</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/csv">CSV file</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/html">HTML</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/javascript">Javascript</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/plain">Text file</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/richtext">RTF file</message>
+  <message key="xmlui.dri2xhtml.mimetype.text/xml">XML</message>
+
+  <!-- Video-based formats -->
+  <message key="xmlui.dri2xhtml.mimetype.video/avi">AVI video</message>
+  <message key="xmlui.dri2xhtml.mimetype.video/mjp2">Motion JPEG 2000</message>
+  <message key="xmlui.dri2xhtml.mimetype.video/mpeg">MPEG video</message>
+  <message key="xmlui.dri2xhtml.mimetype.video/mpeg2">MPEG-2 video</message>
+  <message key="xmlui.dri2xhtml.mimetype.video/mp4">MPEG-4 video</message>
+  <message key="xmlui.dri2xhtml.mimetype.video/quicktime">QuickTime video</message>
+
 </catalogue>

@@ -62,6 +62,7 @@ import org.dspace.content.DCSeriesNumber;
 import org.dspace.content.DCValue;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataField;
+import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.submit.AbstractProcessingStep;
 
@@ -102,6 +103,9 @@ public class DescribeStep extends AbstractProcessingStep
 
     // there were required fields that were not filled out
     public static final int STATUS_MISSING_REQUIRED_FIELDS = 2;
+    
+    // the metadata language qualifier
+    public static final String LANGUAGE_QUALIFIER = getDefaultLanguageQualifier();
 
     /** Constructor */
     public DescribeStep() throws ServletException
@@ -233,7 +237,7 @@ public class DescribeStep extends AbstractProcessingStep
                     {
                         if (!vals[z].equals(""))
                         {
-                            item.addMetadata(schema, element, qualifier, "en",
+                            item.addMetadata(schema, element, qualifier, LANGUAGE_QUALIFIER,
                                     vals[z]);
                         }
                     }
@@ -244,7 +248,7 @@ public class DescribeStep extends AbstractProcessingStep
                     || (inputType.equals("textarea")))
             {
                 readText(request, item, schema, element, qualifier, inputs[j]
-                        .getRepeatable(), "en");
+                        .getRepeatable(), LANGUAGE_QUALIFIER);
             }
             else
             {
@@ -264,16 +268,23 @@ public class DescribeStep extends AbstractProcessingStep
 
         // Step 3:
         // Check to see if any fields are missing
-        clearErrorFields(request);
-        for (int i = 0; i < inputs.length; i++)
+        // Only check for required fields if user clicked the "next", the "previous" or the "progress bar" button
+        if (buttonPressed.equals(NEXT_BUTTON)
+                || buttonPressed.startsWith(PROGRESS_BAR_PREFIX)
+                || buttonPressed.equals(PREVIOUS_BUTTON)
+                || buttonPressed.equals(CANCEL_BUTTON))
         {
-            DCValue[] values = item.getMetadata(inputs[i].getSchema(),
-                    inputs[i].getElement(), inputs[i].getQualifier(), Item.ANY);
-
-            if (inputs[i].isRequired() && values.length == 0)
+            clearErrorFields(request);
+            for (int i = 0; i < inputs.length; i++)
             {
-                // since this field is missing add to list of error fields
-                addErrorField(request, getFieldName(inputs[i]));
+                DCValue[] values = item.getMetadata(inputs[i].getSchema(),
+                        inputs[i].getElement(), inputs[i].getQualifier(), Item.ANY);
+
+                if (inputs[i].isRequired() && values.length == 0)
+                {
+                    // since this field is missing add to list of error fields
+                    addErrorField(request, getFieldName(inputs[i]));
+                }
             }
         }
 
@@ -360,7 +371,33 @@ public class DescribeStep extends AbstractProcessingStep
         
         return inputsReader;
     }
-
+    
+    /**
+     * @param filename
+     *        file to get the input reader for
+     * @return the current DCInputsReader 
+     */
+    public static DCInputsReader getInputsReader(String filename) throws ServletException
+    {
+        inputsReader = new DCInputsReader(filename);
+        return inputsReader;
+    }
+    
+    /**
+     * @return the default language qualifier for metadata
+     */
+    
+    public static String getDefaultLanguageQualifier()
+    {
+       String language = "";
+       language = ConfigurationManager.getProperty("default.language");
+       if (language == null || language == "")
+       {
+    	   language = "en";
+       }
+       return language;
+    }
+    
     // ****************************************************************
     // ****************************************************************
     // METHODS FOR FILLING DC FIELDS FROM METADATA FORMS
@@ -750,7 +787,7 @@ public class DescribeStep extends AbstractProcessingStep
     {
         List vals = new LinkedList();
 
-        int i = 0;
+        int i = 1;    //start index at the first of the previously entered values
         boolean foundLast = false;
 
         log.debug("getRepeatedParameter: metadataField=" + metadataField
@@ -760,10 +797,19 @@ public class DescribeStep extends AbstractProcessingStep
         while (!foundLast)
         {
             String s = null;
-            if (i == 0)
+
+            //First, add the previously entered values.
+            // This ensures we preserve the order that these values were entered
+            s = request.getParameter(param + "_" + i);
+
+            // If there are no more previously entered values,
+            // see if there's a new value entered in textbox
+            if (s==null)
+            {
                 s = request.getParameter(param);
-            else
-                s = request.getParameter(param + "_" + i);
+                //this will be the last value added
+                foundLast = true;
+            }
 
             // We're only going to add non-null values
             if (s != null)
@@ -789,13 +835,7 @@ public class DescribeStep extends AbstractProcessingStep
                 }
 
                 if (addValue)
-                    vals.add(s.trim());
-            }
-            else
-            {
-                // If the value was null (as opposed to present,
-                // but empty) we've reached the last name
-                foundLast = true;
+                  vals.add(s.trim());
             }
 
             i++;
@@ -825,5 +865,4 @@ public class DescribeStep extends AbstractProcessingStep
         }
 
     }
-
 }

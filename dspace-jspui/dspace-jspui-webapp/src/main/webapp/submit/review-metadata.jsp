@@ -148,6 +148,7 @@
           {
              for (int i = 0; i < values.length; i++)
              {
+                boolean newline = true;
                 if (inputType.equals("date"))
                 {
                    DCDate date = new DCDate(values[i].value);
@@ -158,25 +159,47 @@
                    String storedVal = values[i].value;
                    String displayVal = inputs[z].getDisplayString(pairsName,
                                                                 storedVal);
-                   row.append(Utils.addEntities(displayVal));
+                   if (displayVal != null && !displayVal.equals(""))
+                   {
+                       row.append(Utils.addEntities(displayVal));
+                   }
+                   else if (storedVal != null && !storedVal.equals(""))
+                   {
+                       // use the stored value as label rather than null
+                       row.append(Utils.addEntities(storedVal));
+                   }
                 }
                 else if (inputType.equals("qualdrop_value"))
                 {
                    String qual = values[i].qualifier;
-                   if(qual==null) qual = "";
-                   String displayQual = inputs[z].getDisplayString(pairsName, 
-                                                                 qual);
-                   String displayValue = Utils.addEntities(values[i].value);
-                   if (displayQual != null)
+                   if(qual==null)
                    {
-                       row.append(displayQual + ":" + displayValue);
+                       qual = "";
+                       newline = false;
+                   }
+                   else
+                   {
+                        String displayQual = inputs[z].getDisplayString(pairsName,qual);
+                        String displayValue = Utils.addEntities(values[i].value);
+                        if (displayQual != null)
+                        {
+                            row.append(displayQual + ":" + displayValue);
+                        }
+                        else
+                        {
+                            newline = false;
+                        }
                    }
                 }
                 else 
                 {
                    row.append(Utils.addEntities(values[i].value));
                 }
-                row.append("<br />");
+
+                if (newline)
+                {
+                    row.append("<br />");
+                }
              }
           }
           row.append("</td>");

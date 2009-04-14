@@ -16,12 +16,12 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-parent</artifactId>
-      <version>1.5.1</version>
+      <version>1.5.2</version>
    </parent>
 
    <repositories>
       <repository>
-         <id>maven.dspace.org/snapshot</id>
+         <id>maven.dspace.org-snapshot</id>
          <name>DSpace Maven Snapshot Repository</name>
          <url>http://maven.dspace.org/snapshot</url>
          <releases>
@@ -41,9 +41,9 @@
    	into the snapshot repository below.
    -->
    <scm>
-   	<connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace</connection>
-   	<developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1_5_1/dspace</developerConnection>
-   	<url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1_5_1/dspace</url>
+   	<connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.5.2/dspace</connection>
+   	<developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.5.2/dspace</developerConnection>
+   	<url>http://dspace.svn.sourceforge.net/viewvc/dspace/tags/dspace-1.5.2/dspace</url>
    </scm>
 
    <profiles>
@@ -460,6 +460,31 @@
          </dependencies>
       </profile>
 
+      <!--  
+         Using xpdf filters requires the inclusion
+         Of Sun dependencies these are not redistributable
+         and you will need to install them locally in your
+         maven repository prior to building your dspace instance
+      -->
+      <profile>
+         <id>xpdf-mediafilter-support</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
+         <dependencies>
+            <dependency>
+               <groupId>com.sun.media</groupId>
+               <artifactId>jai_imageio</artifactId>
+               <version>1.0_01</version>
+            </dependency>
+            <dependency>
+               <groupId>javax.media</groupId>
+               <artifactId>jai_core</artifactId>
+               <version>1.1.2_01</version>
+            </dependency>
+         </dependencies>
+      </profile>
+   
    </profiles>
    
    <!-- 

@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
   <chapter remap="h1">
-    <title>DSpace System Documentation: Business Logic Layer</title>
+    <title><anchor id="docbook-business.html"/>DSpace System Documentation: Business Logic Layer</title>
     <section remap="h2">
       <title><anchor id="docbook-business.html-core" xreflabel="Core Classes"/>Core Classes</title>
       <para>The <literal>org.dspace.core</literal> package provides some basic classes that are used throughout the DSpace code.</para>
       <section remap="h3">
         <title>The Configuration Manager (<literal>ConfigurationManager</literal>)</title>
         <para>The configuration manager is responsible for reading the main <literal>dspace.cfg</literal> properties file, managing the &apos;template&apos; configuration files for other applications such as Apache, and for obtaining the text for e-mail messages.</para>
-        <para>The system is configured by editing the relevant files in <literal>/dspace/config</literal>, as described in the <ulink url="configure.html">configuration section</ulink>.</para>
+        <para>The system is configured by editing the relevant files in <literal>/dspace/config</literal>, as described in the <link linkend="docbook-configure.html">configuration section</link>.</para>
         <para>
           <emphasis role="bold">When editing configuration files for applications that DSpace uses, such as Apache, remember to edit the file in /dspace/config/templates and then run /dspace/bin/install-configs rather than editing the &apos;live&apos; version directly!</emphasis>
         </para>
@@ -19,7 +19,7 @@
                 <literal> /dspace/bin/install-configs</literal>
 
               </screen>
- This processes and installs configuration files for other applications, as described in the <ulink url="configure.html#templates">configuration section</ulink>.</para>
+ This processes and installs configuration files for other applications, as described in the <link linkend="docbook-configure.html-templates">configuration section</link>.</para>
           </listitem>
           <listitem>
             <para><screen>
@@ -214,7 +214,7 @@
     <section remap="h2">
       <title><anchor id="docbook-business.html-content" xreflabel="Content Management API"/>Content Management API</title>
       <para>The content management API package <literal>org.dspace.content</literal> contains Java classes for reading and manipulating content stored in the DSpace system. This is the API that components in the application layer will probably use most.</para>
-      <para>Classes corresponding to the main elements in the <ulink url="functional.html#data_model">DSpace data model</ulink> (<literal>Community</literal>, <literal>Collection</literal>, <literal>Item</literal>, <literal>Bundle</literal> and <literal>Bitstream</literal>) are sub-classes of the abstract class <literal>DSpaceObject</literal>. The <literal>Item</literal> object handles the Dublin Core metadata record.</para>
+      <para>Classes corresponding to the main elements in the <link linkend="docbook-functional.html-data_model">DSpace data model</link> (<literal>Community</literal>, <literal>Collection</literal>, <literal>Item</literal>, <literal>Bundle</literal> and <literal>Bitstream</literal>) are sub-classes of the abstract class <literal>DSpaceObject</literal>. The <literal>Item</literal> object handles the Dublin Core metadata record.</para>
       <para>Each class generally has one or more static <literal>find</literal> methods, which are used to instantiate content objects. Constructors do not have public access and are just used internally. The reasons for this are:</para>
       <itemizedlist>
         <listitem>
@@ -240,7 +240,7 @@ Collection myNewCollection = existingCommunity.createCollection();
 </screen>
       <para>The primary reason for this is for determining authorization. In order to know whether an e-person may create an object, the system must know which container the object is to be added to. It makes no sense to create a collection outside of a community, and the authorization system does not have a policy for that.</para>
       <para><literal>Item</literal>s are first created in the form of an implementation of <literal>InProgressSubmission</literal>. An <literal>InProgressSubmission</literal> represents an item under construction; once it is complete, it is installed into the main archive and added to the relevant collection by the <literal>InstallItem</literal> class. The <literal>org.dspace.content</literal> package provides an implementation of <literal>InProgressSubmission</literal> called <literal>WorkspaceItem</literal>; this is a simple implementation that contains some fields used by the Web submission UI. The <literal>org.dspace.workflow</literal> also contains an implementation called <literal>WorkflowItem</literal> which represents a submission undergoing a workflow process.</para>
-      <para>In the previous chapter there is an <ulink url="functional.html#ingest">overview of the item ingest process</ulink> which should clarify the previous paragraph. Also see the section on <link linkend="docbook-business.html-workflow">the workflow system</link>.</para>
+      <para>In the previous chapter there is an <link linkend="docbook-functional.html-ingest">overview of the item ingest process</link> which should clarify the previous paragraph. Also see the section on <link linkend="docbook-business.html-workflow">the workflow system</link>.</para>
       <para><literal>Community</literal> and <literal>BitstreamFormat</literal> do have static <literal>create</literal> methods; one must be a site administrator to have authorization to invoke these.</para>
       <section remap="h3">
         <title>Other Classes</title>
@@ -789,7 +789,7 @@ osswalk = \
         <para>Here are some usage examples to illustrate how the Plugin Manager works.</para>
         <section remap="h4">
           <title>Managing the MediaFilter plugins transparently</title>
-          <para>The existing DSpace 1.3 MediaFilterManager implementation has been largely replaced by the Plugin Manager. The MediaFilter classes become plugins named in the configuration. Refer to the <ulink url="configure.html#mediafilters">configuration guide</ulink> for further details.</para>
+          <para>The existing DSpace 1.3 MediaFilterManager implementation has been largely replaced by the Plugin Manager. The MediaFilter classes become plugins named in the configuration. Refer to the <link linkend="docbook-configure.html-mediafilters">configuration guide</link> for further details.</para>
         </section>
         <section remap="h4">
           <title>A Singleton Plugin</title>
@@ -865,7 +865,7 @@ public class XsltDisseminationCrosswalk extends SelfNamedPlugin
           </section>
         <section remap="h4">
           <title>Stackable Authentication</title>
-          <para>The Stackable Authentication mechanism needs to know all of the plugins configured for the interface, in the order of configuration, since order is significant. It gets a Sequence Plugin from the Plugin Manager. Refer to the <ulink url="configure.html#authenticate">configuration guide</ulink> for further details.</para>
+          <para>The Stackable Authentication mechanism needs to know all of the plugins configured for the interface, in the order of configuration, since order is significant. It gets a Sequence Plugin from the Plugin Manager. Refer to the <link linkend="docbook-configure.html-authenticate">configuration guide</link> for further details.</para>
         </section>
       </section>
     </section>
@@ -1027,7 +1027,7 @@ hdl:1721.123/4567
 http://hdl.handle.net/1721.123/4567
 </screen>
       <para>It is the responsibility of the caller to extract the basic form from whichever displayed form is used.</para>
-      <para>The <literal>handle</literal> table maps these Handles to resource type/resource ID pairs, where resource type is a value from <literal>org.dspace.core.Constants</literal> and resource ID is the internal identifier (database primary key) of the object. This allows Handles to be assigned to any type of object in the system, though as <ulink url="functional.html#handles">explained in the functional overview</ulink>, only communities, collections and items are presently assigned Handles.</para>
+      <para>The <literal>handle</literal> table maps these Handles to resource type/resource ID pairs, where resource type is a value from <literal>org.dspace.core.Constants</literal> and resource ID is the internal identifier (database primary key) of the object. This allows Handles to be assigned to any type of object in the system, though as <link linkend="docbook-functional.html-handles">explained in the functional overview</link>, only communities, collections and items are presently assigned Handles.</para>
       <para><literal>HandleManager</literal> contains static methods for:</para>
       <itemizedlist>
         <listitem>
@@ -1316,140 +1316,6 @@ SELECT item_id FROM ItemsByTitle ORDER BY sort_title OFFSET 40 LIMIT
 	20
 </screen>
         <para>There are two main drawbacks to this: Firstly, <literal>LIMIT</literal> and <literal>OFFSET</literal> are PostgreSQL-specific keywords. Secondly, the database is still actually performing dynamic sorting of the titles, so the browse code as it stands will not scale particularly well. The code does cache <literal>BrowseInfo</literal> objects, so that common browse operations are performed quickly, but this is not an ideal solution.</para>
-      </section>
-    </section>
-    <section remap="h2">
-      <title><anchor id="docbook-business.html-history" xreflabel="History Recorder"/>History Recorder</title>
-      <para>The purpose of the history subsystem is to capture a time-based record of significant changes in DSpace, in a manner suitable for later refactoring or repurposing. Note that the history data is not expected to provide current information about the archive; it simply records what has happened in the past.</para>
-      <para>The <ulink url="http://www.metadata.net/harmony/">Harmony project</ulink> describes a simple and powerful approach for modeling temporal data. The DSpace history framework adopts this model. The Harmony model is used by the serialization mechanism (and ultimately by agents who interpret the serializations); users of the History API need not be aware of it. The content management API handles invocations of the history system. Users of the DSpace public API do not generally need to use the history API.</para>
-      <para>When anything of archival interest occurs in DSpace, the <literal>saveHistory</literal> method of the <literal>HistoryManager</literal> is invoked. The parameters contains a reference to anything of archival interest. Upon reception of the object, it serializes the state of all archive objects referred to by it, and creates Harmony-style objects and associations to describe the relationships between the objects. (A simple example is given below). Note that each archive object must have a unique identifier to allow linkage between discrete events; this is discussed under &quot;Unique IDs&quot; below.</para>
-      <para>The serializations (including the Harmony objects and associations) are persisted as files in the <literal>/dspace/history</literal> (or other configured) directory. The <literal>history</literal> and <literal>historystate</literal> tables contain simple indicies into the serializations in the file system.</para>
-      <section remap="h3">
-        <title>Archival Events</title>
-        <para>The following events are significant enough to warrant history records:</para>
-        <itemizedlist>
-          <listitem>
-            <para> Communities </para>
-            <itemizedlist>
-              <listitem>
-                <para> create/modify/delete</para>
-              </listitem>
-              <listitem>
-                <para> add/remove Collection to/from Community</para>
-              </listitem>
-            </itemizedlist>
-          </listitem>
-          <listitem>
-            <para> Collections </para>
-            <itemizedlist>
-              <listitem>
-                <para> create/modify/delete</para>
-              </listitem>
-              <listitem>
-                <para> add/remove Item to/from Collection</para>
-              </listitem>
-            </itemizedlist>
-          </listitem>
-          <listitem>
-            <para> Items </para>
-            <itemizedlist>
-              <listitem>
-                <para> create/modify/delete</para>
-              </listitem>
-              <listitem>
-                <para> assign Handle to Item</para>
-              </listitem>
-              <listitem>
-                <para> modify Item contents (Bundles, Bitstreams, metadata fields, etc)</para>
-              </listitem>
-            </itemizedlist>
-          </listitem>
-          <listitem>
-            <para> EPerson </para>
-            <itemizedlist>
-              <listitem>
-                <para> create/modify/delete</para>
-              </listitem>
-            </itemizedlist>
-          </listitem>
-          <listitem>
-            <para> Workflow </para>
-            <itemizedlist>
-              <listitem>
-                <para> Workflow completed</para>
-              </listitem>
-            </itemizedlist>
-          </listitem>
-        </itemizedlist>
-      </section>
-      <section remap="h3">
-        <title>Serializations</title>
-        <para>The serialization of an archival object consists of:</para>
-        <itemizedlist>
-          <listitem>
-            <para> Its instance fields (ie, non-static, non-transient fields)</para>
-          </listitem>
-          <listitem>
-            <para> The serializations of associated objects (or references to these serializations).</para>
-          </listitem>
-        </itemizedlist>
-      </section>
-      <section remap="h3">
-        <title>Unique Ids</title>
-        <para>To be able to trace the history of an object, it is essential that the object have a unique identifier. Since not all objects in the system have Handles, the unique identifiers are only weakly tied to the Handle system. Instead, the identifier consists of:</para>
-        <itemizedlist>
-          <listitem>
-            <para> an identifer for the project</para>
-          </listitem>
-          <listitem>
-            <para> a site id (using the handle prefix)</para>
-          </listitem>
-          <listitem>
-            <para> an RDBMS-based id for objects</para>
-          </listitem>
-        </itemizedlist>
-      </section>
-      <section remap="h3">
-        <title>Storage</title>
-        <para>When an archive object is serialized, an object ID and MD5 checksum are recorded. When another object is serialized, the checksum for the serialization is matched against existing checksums for that object. If the checksum already exists, the object is not stored; a reference to the object is used instead. Note that since none of the serializations are deleted, reference counting is unnecessary.</para>
-        <para>The history data is not initially stored in a queryable form. Two simple RDBMS tables give basic indications of what is stored, and where. The <literal>history</literal> table is an index of serializations with checksums and dates. The <literal>history_id</literal> column corresponds to the file in which a serialization is stored. For example, if the history ID is 123456, it will be stored in the file:</para>
-        <screen>
-/dspace/history/00/12/34/123456
-</screen>
-        <para>The table also contains the date the serialization was written and the MD5 checksum of the serialization.</para>
-        <para>The <literal>historystate</literal> table is supposed to indicate the most recent serialization of any given object.</para>
-      </section>
-      <section remap="h3">
-        <title>Example</title>
-        <para>An item is submitted to a collection via bulk upload. When (and if) the item is eventually added to the collection, the history method is called, with references to the item, its collection, the e-person who performed the bulk upload, and some indication of the fact that it was submitted via a bulk upload.</para>
-        <para>When called, the HistoryManager does the following: It creates the following new resources (all with unique ids):</para>
-        <itemizedlist>
-          <listitem>
-            <para> An event</para>
-          </listitem>
-          <listitem>
-            <para> A state</para>
-          </listitem>
-          <listitem>
-            <para> An action</para>
-          </listitem>
-        </itemizedlist>
-        <para>It also generates the following relationships:</para>
-        <screen>
-event  --atTime--&gt;     time
-event  --hasOutput--&gt;  state
-Item   --inState--&gt;    state
-state  --contains--&gt;   Item
-action --creates--&gt;    Item
-event  --hasAction--&gt;  action
-action --usesTool--&gt;   DSpace Upload
-action --hasAgent--&gt;   User
-</screen>
-        <para>The history component serializes the state of all archival objects involved (in this case, the item, the e-person, and the collection). It creates entries in the history database tables which associate the archival objects with the generated serializations.</para>
-      </section>
-      <section remap="h3">
-        <title>Caveats</title>
-        <para>This history system is a largely untested experiment. It also needs further documentation. There have been no serious efforts to determine whether the information written by the history system, either to files or the database tables, is accurate. In particular, the <literal>historystate</literal> table does not seem to be correctly written.</para>
       </section>
     </section>
     <section remap="h2">

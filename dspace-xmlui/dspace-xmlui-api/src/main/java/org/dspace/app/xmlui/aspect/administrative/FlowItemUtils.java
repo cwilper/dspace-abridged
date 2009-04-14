@@ -1,9 +1,9 @@
 /*
  * FlowItemUtils.java
  *
- * Version: $Revision: 1.3 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/07/13 23:20:54 $
+ * Date: $Date$
  *
  * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -203,11 +203,10 @@ public class FlowItemUtils
 				}
 			}
 		}
-			
 		
 		// STEP 3:
 		// Iterate over all the indexes within the scope and add them back in.
-		for (Integer index : indexes)
+		for (Integer index=1; index <= indexes.size(); ++index)
 		{
 			String name = request.getParameter("name_"+index);
 			String value = request.getParameter("value_"+index);
@@ -392,6 +391,14 @@ public class FlowItemUtils
 			{
 				// set bundle's name to ORIGINAL
 				bitstream = item.createSingleBitstream(is, bundleName);
+				
+				// set the permission as defined in the owning collection
+				Collection owningCollection = item.getOwningCollection();
+				if (owningCollection != null)
+				{
+				    Bundle bnd = bitstream.getBundles()[0]; 
+				    bnd.inheritCollectionDefaultPolicies(owningCollection);
+				}
 			}
 			else
 			{

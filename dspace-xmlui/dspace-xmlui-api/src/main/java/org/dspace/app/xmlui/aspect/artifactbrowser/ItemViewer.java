@@ -1,9 +1,9 @@
 /*
  * ItemViewer.java
  *
- * Version: $Revision: 1.14 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/08/08 20:58:30 $
+ * Date: $Date$
  *
  * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -41,8 +41,12 @@ package org.dspace.app.xmlui.aspect.artifactbrowser;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
+
+import javax.servlet.ServletException;
 
 import org.apache.cocoon.caching.CacheableProcessingComponent;
 import org.apache.cocoon.environment.ObjectModelHelper;
@@ -54,6 +58,7 @@ import org.dspace.app.xmlui.cocoon.AbstractDSpaceTransformer;
 import org.dspace.app.xmlui.utils.DSpaceValidity;
 import org.dspace.app.xmlui.utils.HandleUtil;
 import org.dspace.app.xmlui.utils.UIException;
+import org.dspace.app.xmlui.utils.UsageEvent;
 import org.dspace.app.xmlui.wing.Message;
 import org.dspace.app.xmlui.wing.WingException;
 import org.dspace.app.xmlui.wing.element.Body;
@@ -66,7 +71,13 @@ import org.dspace.content.Collection;
 import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.crosswalk.CrosswalkException;
+import org.dspace.content.crosswalk.DisseminationCrosswalk;
+import org.dspace.core.Constants;
 import org.dspace.core.LogManager;
+import org.dspace.core.PluginManager;
+import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 import org.xml.sax.SAXException;
 
 /**
@@ -96,6 +107,9 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
     
 	/** Cached validity object */
 	private SourceValidity validity = null;
+	
+	/** XHTML crosswalk instance */
+	private DisseminationCrosswalk xHTMLHeadCrosswalk = null;
 	
     /**
      * Generate the unique caching key.
@@ -156,7 +170,6 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             WingException, UIException, SQLException, IOException,
             AuthorizeException
     {
-
         DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
         if (!(dso instanceof Item))
             return;
@@ -173,6 +186,37 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
         pageMeta.addTrailLink(contextPath + "/",T_dspace_home);
         HandleUtil.buildHandleTrail(item,pageMeta,contextPath);
         pageMeta.addTrail().addContent(T_trail);
+        
+        // Metadata for <head> element
+        if (xHTMLHeadCrosswalk == null)
+        {
+            xHTMLHeadCrosswalk = (DisseminationCrosswalk) PluginManager.getNamedPlugin(
+              DisseminationCrosswalk.class, "XHTML_HEAD_ITEM");
+        }
+
+        // Produce <meta> elements for header from crosswalk
+        try
+        {
+            List l = xHTMLHeadCrosswalk.disseminateList(item);
+            StringWriter sw = new StringWriter();
+
+            XMLOutputter xmlo = new XMLOutputter();
+            for (int i = 0; i < l.size(); i++)
+            {
+                Element e = (Element) l.get(i);
+                // FIXME: we unset the Namespace so it's not printed.
+                // This is fairly yucky, but means the same crosswalk should
+                // work for Manakin as well as the JSP-based UI.
+                e.setNamespace(null);
+                xmlo.output(e, sw);
+            }
+            pageMeta.addMetadata("xhtml_head_item").addContent(sw.toString());
+        }
+        catch (CrosswalkException ce)
+        {
+            // TODO: Is this the right exception class?
+            throw new WingException(ce);
+        }
     }
 
     /**
@@ -187,6 +231,9 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             return;
         Item item = (Item) dso;
 
+        new UsageEvent().fire((Request) ObjectModelHelper.getRequest(objectModel),
+                context, UsageEvent.VIEW, Constants.ITEM, item.getID());
+        
         // Build the item viewer division.
         Division division = body.addDivision("item-view","primary");
         String title = getItemTitle(item);

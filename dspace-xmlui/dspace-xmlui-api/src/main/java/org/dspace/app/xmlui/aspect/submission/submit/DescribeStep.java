@@ -1,9 +1,9 @@
 /*
  * DescribeStep.java
  *
- * Version: $Revision: 1.4 $
+ * Version: $Revision$
  *
- * Date: $Date: 2006/07/13 23:20:54 $
+ * Date: $Date$
  *
  * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
  * Institute of Technology.  All rights reserved.
@@ -341,12 +341,7 @@ public class DescribeStep extends AbstractSubmissionStep
                 values = submission.getItem().getMetadata(input.getSchema(), input.getElement(), input.getQualifier(), Item.ANY);
             }
 
-            if (values.length == 0) 
-            {
-                describeSection.addLabel(input.getLabel());
-                describeSection.addItem().addHighlight("italic").addContent(ReviewStep.T_no_metadata);
-            }
-            else 
+            if (values.length > 0)
             {
                 for (DCValue value : values)
                 {
@@ -364,14 +359,22 @@ public class DescribeStep extends AbstractSubmissionStep
                     {
                         String qualifier = value.qualifier;
                         String displayQual = input.getDisplayString(pairsName,qualifier);
-                        displayValue = displayQual + ":" + value.value;
+                        if (displayQual!=null && displayQual.length()>0)
+                        {
+                            displayValue = displayQual + ":" + value.value;
+                        }
                     }
                     else 
                     {
                         displayValue = value.value;
                     }
-                    describeSection.addLabel(input.getLabel());
-                    describeSection.addItem(displayValue);
+
+                    //Only display this field if we have a value to display
+                    if (displayValue!=null && displayValue.length()>0)
+                    {
+                        describeSection.addLabel(input.getLabel());
+                        describeSection.addItem(displayValue);
+                    }
                 } // For each DCValue
             } // If values exist
         }// For each input
