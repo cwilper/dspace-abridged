@@ -353,6 +353,14 @@
               </form>
             </td>
           </tr>
+          <tr>
+            <td headers="t1" class="standard" align="center">
+               <form method="post" action="<%=request.getContextPath()%>/dspace-admin/metadataexport">
+                 <input type="hidden" name="handle" value="<%= community.getHandle() %>" />
+                 <input type="submit" value="<fmt:message key="jsp.general.metadataexport.button"/>" />
+               </form>
+             </td>
+          </tr>
 			<% } %>
             <tr>
               <td headers="t1" class="standard" align="center">
@@ -363,8 +371,9 @@
 	</td>
       </tr>
     </table>
+
     <% } %>
-    
+   
     <%-- Recently Submitted items --%>
 	<h3><fmt:message key="jsp.community-home.recentsub"/></h3>
 <%
@@ -427,6 +436,13 @@
     <%= sidebar %>
 
   </dspace:sidebar>
+
+         <div align="center">
+                   <form method="get" action="<%= request.getContextPath() %>/displaystats">
+                       <input type="hidden" name="handle" value="<%= community.getHandle() %>"/>
+                       <input type="submit" name="submit_simple" value="<fmt:message key="jsp.community-home.display-statistics"/>" />
+                   </form>
+          </div>
 
 
 </dspace:layout>

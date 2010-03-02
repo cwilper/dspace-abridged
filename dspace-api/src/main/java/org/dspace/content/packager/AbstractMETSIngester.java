@@ -5,8 +5,7 @@
  *
  * Date: $Date$
  *
- * Copyright (c) 2002-2005, Hewlett-Packard Company and Massachusetts
- * Institute of Technology.  All rights reserved.
+ * Copyright (c) 2002-2009, The DSpace Foundation.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -19,8 +18,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Neither the name of the Hewlett-Packard Company nor the name of the
- * Massachusetts Institute of Technology nor the names of their
+ * - Neither the name of the DSpace Foundation nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -107,6 +105,10 @@ public abstract class AbstractMETSIngester
     // value of mets.submission.preserveManifest config key
     private static final boolean preserveManifest =
         ConfigurationManager.getBooleanProperty("mets.submission.preserveManifest", false);
+
+    // value of mets.submission.useCollectionTemplate config key
+    private static final boolean useTemplate =
+        ConfigurationManager.getBooleanProperty("mets.submission.useCollectionTemplate", false);
 
     /**
      * An instance of MdrefManager holds the state needed to
@@ -199,7 +201,7 @@ public abstract class AbstractMETSIngester
              *  match the URL references in <Flocat> and <mdRef> elements.
              */
             METSManifest manifest = null;
-            wi = WorkspaceItem.create(context, collection, false);
+            wi = WorkspaceItem.create(context, collection, useTemplate);
             Item item = wi.getItem();
             Bundle contentBundle = item.createBundle(Constants.CONTENT_BUNDLE_NAME);
             Bundle mdBundle = null;
@@ -380,7 +382,7 @@ public abstract class AbstractMETSIngester
             // get mdref'd streams from "callback" object.
             MdrefManager callback = new MdrefManager(mdBundle);
 
-            chooseItemDmd(context, item, manifest, callback, manifest.getItemDmds());
+            chooseItemDmd(context, item, manifest, callback, manifest.getItemDmds(), params);
 
             // crosswalk content bitstreams too.
             for (Iterator ei = fileIdToBitstream.entrySet().iterator();
@@ -548,7 +550,7 @@ public abstract class AbstractMETSIngester
      * descriptive metadata for the item being ingested.  It is
      * responsible for calling the crosswalk, using the manifest's helper
      * i.e. <code>manifest.crosswalkItem(context,item,dmdElement,callback);</code>
-     * (The final argument is a reference to itself since the
+     * (The <code>callback</code> argument is a reference to itself since the
      * class also implements the <code>METSManifest.MdRef</code> interface
      * to fetch package files referenced by mdRef elements.)
      * <p>
@@ -556,12 +558,15 @@ public abstract class AbstractMETSIngester
      * as protected fields from the superclass.
      *
      * @param context the DSpace context
-     * @param dmds array of Elements, each a METS dmdSec that applies to the Item as a whole.
-     *
+     * @param item the DSpace item
+     * @param manifest the METSManifest
+     * @param callback the MdrefManager (manages all external metadata files referenced by METS <code>mdref</code> elements)
+     * @param dmds array of Elements, each a METS <code>dmdSec</code> that applies to the Item as a whole.
+     * @param params any user parameters passed to the Packager script
      */
     abstract public void chooseItemDmd(Context context, Item item,
-                                       METSManifest manifest, MdrefManager cb,
-                                       Element dmds[])
+                                       METSManifest manifest, MdrefManager callback,
+                                       Element dmds[], PackageParameters params)
         throws CrosswalkException,
                AuthorizeException, SQLException, IOException;
 

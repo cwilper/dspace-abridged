@@ -82,13 +82,29 @@ public class SendFeedbackAction extends AbstractAction
         // Obtain information from request
         // The page where the user came from
         String fromPage = request.getHeader("Referer");
-
         // Prevent spammers and splogbots from poisoning the feedback page
         String host = ConfigurationManager.getProperty("dspace.hostname");
+        String allowedReferrersString = ConfigurationManager.getProperty("mail.allowed.referrers");
+
+        String[] allowedReferrersSplit = null;
+        boolean validReferral = false;
+
+        if((allowedReferrersString != null) && (allowedReferrersString.length() > 0))
+        {
+            allowedReferrersSplit = allowedReferrersString.trim().split("\\s*,\\s*");
+            for(int i = 0; i < allowedReferrersSplit.length; i++)
+            {
+                if(fromPage.indexOf(allowedReferrersSplit[i]) != -1)
+                {
+                    validReferral = true;
+                    break;
+                }
+            }
+        }
 
         String basicHost = "";
         if (host.equals("localhost") || host.equals("127.0.0.1")
-        		|| host.equals(InetAddress.getLocalHost().getHostAddress()))
+                        || host.equals(InetAddress.getLocalHost().getHostAddress()))
             basicHost = host;
         else
         {
@@ -98,9 +114,10 @@ public class SendFeedbackAction extends AbstractAction
             basicHost = host.substring(host.substring(0, lastDot).lastIndexOf("."));
         }
 
-        if (fromPage == null || fromPage.indexOf(basicHost) == -1)
+        if ((fromPage == null) || ((fromPage.indexOf(basicHost) == -1) && (validReferral == false)))
         {
-            throw new AuthorizeException();
+            // N.B. must use old message catalog because Cocoon i18n is only available to transformed pages.
+            throw new AuthorizeException(I18nUtil.getMessage("feedback.error.forbidden"));
         }
 
         // User email from context

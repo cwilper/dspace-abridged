@@ -42,6 +42,8 @@ package org.dspace.app.xmlui.aspect.artifactbrowser;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.cocoon.caching.CacheableProcessingComponent;
 import org.apache.cocoon.environment.ObjectModelHelper;
@@ -51,10 +53,10 @@ import org.apache.excalibur.source.SourceValidity;
 import org.apache.log4j.Logger;
 import org.dspace.app.xmlui.cocoon.AbstractDSpaceTransformer;
 import org.dspace.app.xmlui.cocoon.DSpaceFeedGenerator;
+import org.dspace.app.xmlui.utils.ContextUtil;
 import org.dspace.app.xmlui.utils.DSpaceValidity;
 import org.dspace.app.xmlui.utils.HandleUtil;
 import org.dspace.app.xmlui.utils.UIException;
-import org.dspace.app.xmlui.utils.UsageEvent;
 import org.dspace.app.xmlui.wing.Message;
 import org.dspace.app.xmlui.wing.WingException;
 import org.dspace.app.xmlui.wing.element.Body;
@@ -71,6 +73,8 @@ import org.dspace.browse.BrowseItem;
 import org.dspace.browse.BrowserScope;
 import org.dspace.sort.SortOption;
 import org.dspace.sort.SortException;
+import org.dspace.usage.UsageEvent;
+import org.dspace.utils.DSpace;
 import org.dspace.content.Collection;
 import org.dspace.content.DSpaceObject;
 import org.dspace.core.ConfigurationManager;
@@ -193,7 +197,6 @@ public class CollectionViewer extends AbstractDSpaceTransformer implements Cache
 	            // Just ignore all errors and return an invalid cache.
 	        }
 
-            log.info(LogManager.getHeader(context, "view_collection", "collection_id=" + (collection == null ? "" : collection.getID())));
     	}
     	return this.validity;
     }
@@ -253,9 +256,6 @@ public class CollectionViewer extends AbstractDSpaceTransformer implements Cache
 
         // Set up the major variables
         Collection collection = (Collection) dso;
-        
-        new UsageEvent().fire((Request) ObjectModelHelper.getRequest(objectModel),
-                context, UsageEvent.VIEW, Constants.COLLECTION, collection.getID());
 
         // Build the collection viewer division.
         Division home = body.addDivision("collection-home", "primary repository collection");
@@ -289,9 +289,29 @@ public class CollectionViewer extends AbstractDSpaceTransformer implements Cache
                     "collection-browse");
             browse.setHead(T_head_browse);
             String url = contextPath + "/handle/" + collection.getHandle();
-            browse.addItemXref(url + "/browse?type=title",T_browse_titles);
-            browse.addItemXref(url + "/browse?type=author",T_browse_authors);
-            browse.addItemXref(url + "/browse?type=dateissued",T_browse_dates);
+
+            try
+            {
+                // Get a Map of all the browse tables
+                BrowseIndex[] bis = BrowseIndex.getBrowseIndices();
+                for (BrowseIndex bix : bis)
+                {
+                    // Create a Map of the query parameters for this link
+                    Map<String, String> queryParams = new HashMap<String, String>();
+
+                    queryParams.put("type", bix.getName());
+
+                    // Add a link to this browse
+                    browse.addItemXref(super.generateURL(url + "/browse", queryParams),
+                            message("xmlui.ArtifactBrowser.Navigation.browse_" + bix.getName()));
+                }
+            }
+            catch (BrowseException bex)
+            {
+                browse.addItemXref(url + "/browse?type=title",T_browse_titles);
+                browse.addItemXref(url + "/browse?type=author",T_browse_authors);
+                browse.addItemXref(url + "/browse?type=dateissued",T_browse_dates);
+            }
         }
 
         // Add the reference

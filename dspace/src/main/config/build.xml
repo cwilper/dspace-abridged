@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-  - Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
-  - Institute of Technology.  All rights reserved.
+  - Copyright (c) 2002-2009, The DSpace Foundation.  All rights reserved.
   - 
   - Redistribution and use in source and binary forms, with or without
   - modification, are permitted provided that the following conditions are
@@ -15,8 +14,7 @@
   - notice, this list of conditions and the following disclaimer in the
   - documentation and/or other materials provided with the distribution.
   - 
-  - - Neither the name of the Hewlett-Packard Company nor the name of the
-  - Massachusetts Institute of Technology nor the names of their
+  - - Neither the name of the DSpace Foundation nor the names of its
   - contributors may be used to endorse or promote products derived from
   - this software without specific prior written permission.
   - 
@@ -128,7 +126,8 @@ Common usage:
         <echo message="" />
         <echo message="update          --> Update ${dspace.dir} config, etc, lib and web applications without " />
         <echo message="                    touching your data" />
-    	<echo message="update_configs  --> Update your configs directory with new configuration files"/>        
+    	<echo message="update_configs  --> Update your configs directory with new configuration files"/> 
+    	<echo message="update_geolite  --> Dowload and install GeoCity database into ${dspace.dir}/config" />
         <echo message="update_code     --> Update compiled code (bin, lib, and etc directories)" />
         <echo message="update_webapps  --> Update web applications" />
         <echo message="" />
@@ -191,9 +190,7 @@ Common usage:
     <!-- and should be hand updated afterward                .          -->
     <!-- ============================================================= -->
     <target name="update_configs" depends="overwrite_configs" description="Updates the Configuration Directory">
-
-    
-    
+    	<antcall target="init_geolite" />
     </target>
         
     <target name="overwrite_configs" description="Overwrites a configuration directory." if="overwrite" depends="copy_configs_keep">
@@ -211,16 +208,13 @@ Common usage:
         Copy files that are different in target to *.old suffix
         -->
         <copy todir="${dspace.dir}/config" preservelastmodified="true" overwrite="true">
-            <intersect>
                 <fileset dir="${dspace.dir}/config">
+                   <and>
                     <different targetdir="config-temp" ignoreFileTimes="true" />
-                    <type type="file" />
-                </fileset>
-                <fileset dir="${dspace.dir}/config">
                     <present present="both" targetdir="config-temp" />
+                   </and>
                     <type type="file" />                                        
                 </fileset>
-            </intersect>            
             <globmapper from="*" to="*-${build.date}.old" />
         </copy>
 
@@ -404,6 +398,10 @@ Common usage:
             <fileset dir="etc" />
         </copy>
 
+    	<copy todir="${dspace.dir}/solr" preservelastmodified="true">
+    	     <fileset dir="solr"/>
+    	</copy>
+    	
         <echo>
 ====================================================================
  ${dspace.dir}/bin was backed up to
@@ -437,32 +435,17 @@ Common usage:
             </fileset>
         </move>
 
-        <copy todir="${dspace.dir}/webapps" preservelastmodified="true" failonerror="no">
-            <fileset dir="webapps">
-                <exclude name="**/web.xml" />
-            </fileset>
-        </copy>
-
-        <copy todir="${dspace.dir}/webapps" preservelastmodified="false" failonerror="no">
-            <fileset dir="webapps">
-                <include name="**/web.xml" />
-            </fileset>
-            <filterchain>
-                <expandproperties />
-            </filterchain>
-        </copy>
-
         <echo>
 ====================================================================
  ${dspace.dir}/webapps was backed up to
                     
  ${dspace.dir}/webapps.bak-${build.date}
                     
- Please review this directory and delete it if its no longer needed.
+ Please review this directory and delete it if it's no longer needed.
 ====================================================================
         </echo>
 
-        <antcall target="build_webapps_wars" />
+        <antcall target="copy_webapps" />
 
         <echo>
 ====================================================================
@@ -487,6 +470,32 @@ Common usage:
  * Start up your Web servlet container again.
 ====================================================================
         </echo>
+
+    </target>
+
+
+    <!-- ============================================================= -->
+	<!-- Copy Web Applications to Runtime Location -->
+    <!-- ============================================================= -->
+
+    <target name="copy_webapps">
+
+        <copy todir="${dspace.dir}/webapps" preservelastmodified="true" failonerror="no">
+            <fileset dir="webapps">
+                <exclude name="**/web.xml" />
+            </fileset>
+        </copy>
+
+        <copy todir="${dspace.dir}/webapps" preservelastmodified="false" failonerror="no">
+            <fileset dir="webapps">
+                <include name="**/web.xml" />
+            </fileset>
+            <filterchain>
+                <expandproperties />
+            </filterchain>
+        </copy>
+
+        <antcall target="build_webapps_wars"/>
 
     </target>
 
@@ -518,6 +527,9 @@ Common usage:
             <fileset dir="${dspace.dir}/webapps/sword/" />
         </war>
 
+    	<war destfile="${dspace.dir}/webapps/solr.war">
+    	            <fileset dir="${dspace.dir}/webapps/solr/" />
+    	</war>
     </target>
 
 
@@ -533,7 +545,13 @@ Common usage:
 
         <mkdir dir="${dspace.dir}/lib" />
 
+        <mkdir dir="${dspace.dir}/etc" />
+
         <mkdir dir="${dspace.dir}/webapps" />
+
+        <mkdir dir="${dspace.dir}/exports" />
+
+        <mkdir dir="${dspace.dir}/exports/download" />
 
         <mkdir dir="${assetstore.dir}" />
 
@@ -547,6 +565,8 @@ Common usage:
 
         <mkdir dir="${report.dir}" />
 
+    	<mkdir dir="${dspace.dir}/solr" />
+    	
     </target>
 
 
@@ -569,6 +589,20 @@ Common usage:
 
         <copy file="${config}" tofile="${dspace.dir}/config/dspace.cfg" preservelastmodified="true" />
 
+    	
+    </target>
+
+    <!-- ============================================================= -->
+    <!-- Check the connection to the database                          -->
+    <!-- ============================================================= -->
+
+    <!-- Test the connection to the database -->
+    <target name="test_database">
+        <java classname="org.dspace.storage.rdbms.DatabaseManager" classpathref="class.path" fork="yes" failonerror="yes">
+            <sysproperty key="log4j.configuration" value="file:config/log4j-console.properties" />
+            <sysproperty key="dspace.log.init.disable" value="true" />
+            <sysproperty key="dspace.configuration" value="${config}" />
+        </java>
     </target>
 
 
@@ -658,7 +692,7 @@ Common usage:
     <!-- Do a fresh system install                                     -->
     <!-- ============================================================= -->
 
-    <target name="fresh_install" depends="init_installation,init_configs,setup_database,load_registries" description="Do a fresh install of the system, overwriting any data">
+    <target name="fresh_install" depends="init_installation,init_configs,test_database,setup_database,load_registries" description="Do a fresh install of the system, overwriting any data">
 
         <delete failonerror="no">
             <fileset dir="${dspace.dir}/bin" includes="**/*" />
@@ -678,6 +712,9 @@ Common usage:
             <fileset dir="lib" />
         </copy>
 
+        <!-- NB: no regular use is made of etc/ files in an installed
+        - system, so this step is 'deprecated', and will eventually
+        - be removed.  -->
         <delete failonerror="no">
             <fileset dir="${dspace.dir}/etc" includes="**/*" />
         </delete>
@@ -686,27 +723,18 @@ Common usage:
             <fileset dir="etc" />
         </copy>
 
+    	<copy todir="${dspace.dir}/solr" preservelastmodified="true">
+    	    <fileset dir="solr" />
+    	</copy>
+    	
         <delete failonerror="no">
             <fileset dir="${dspace.dir}/webapps" includes="**/*" />
         </delete>
 
-        <copy todir="${dspace.dir}/webapps" preservelastmodified="true" failonerror="no">
-            <fileset dir="webapps">
-                <exclude name="**/web.xml" />
-            </fileset>
-        </copy>
-
-        <copy todir="${dspace.dir}/webapps" preservelastmodified="false" failonerror="no">
-            <fileset dir="webapps">
-                <include name="**/web.xml" />
-            </fileset>
-            <filterchain>
-                <expandproperties />
-            </filterchain>
-        </copy>
-
-        <antcall target="build_webapps_wars" />
-
+        <antcall target="copy_webapps" />
+        	
+    	<antcall target="init_geolite" />
+    	
         <java classname="org.dspace.browse.IndexBrowse" classpathref="class.path" fork="yes" failonerror="yes">
             <sysproperty key="log4j.configuration" value="file:config/log4j-console.properties" />
             <sysproperty key="dspace.log.init.disable" value="true" />
@@ -735,7 +763,7 @@ Common usage:
 
  * Make an initial administrator account (an e-person) in DSpace:
  
-   ${dspace.dir}/bin/create-administrator
+   ${dspace.dir}/bin/dspace create-administrator
    
  * Start up your servlet container (Tomcat etc.)
 
@@ -749,6 +777,26 @@ Common usage:
 ====================================================================
         </echo>
 
+    </target>
+
+	<!-- installes GeoCity resolution database -->
+    <target name="update_geolite">
+        <echo>Downloading: http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz</echo>
+        <get src="http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" dest="${dspace.dir}/config/GeoLiteCity.dat.gz" verbose="true" />
+        <gunzip src="${dspace.dir}/config/GeoLiteCity.dat.gz" dest="${dspace.dir}/config/GeoLiteCity.dat" />
+        <delete file="${dspace.dir}/config/GeoLiteCity.dat.gz" />
+    </target>
+
+    <target name="check_geolite">
+        <condition property="need.geolite">
+            <not>
+                <available file="${dspace.dir}/config/GeoLiteCity.dat" />
+            </not>
+        </condition>
+    </target>
+
+    <target name="init_geolite" depends="check_geolite" if="need.geolite">
+        <antcall target="update_geolite" />
     </target>
 
 </project>

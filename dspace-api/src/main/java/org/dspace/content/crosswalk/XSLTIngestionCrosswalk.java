@@ -5,8 +5,7 @@
  *
  * Date: $Date$
  *
- * Copyright (c) 2002-2005, Hewlett-Packard Company and Massachusetts
- * Institute of Technology.  All rights reserved.
+ * Copyright (c) 2002-2009, The DSpace Foundation.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -19,8 +18,7 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Neither the name of the Hewlett-Packard Company nor the name of the
- * Massachusetts Institute of Technology nor the names of their
+ * - Neither the name of the DSpace Foundation nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -52,6 +50,8 @@ import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataField;
 import org.dspace.content.MetadataSchema;
+import org.dspace.content.MetadataValue;
+import org.dspace.content.authority.Choices;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.PluginManager;
@@ -118,8 +118,20 @@ public class XSLTIngestionCrosswalk
         String element = field.getAttributeValue("element");
         String qualifier = field.getAttributeValue("qualifier");
         String lang = field.getAttributeValue("lang");
+        String authority = field.getAttributeValue("authority");
+        String sconf = field.getAttributeValue("confidence");
 
-        item.addMetadata(schema, element, qualifier, lang, field.getText());
+        if ((authority != null && authority.length() > 0) ||
+            (sconf != null && sconf.length() > 0))
+        {
+            int confidence = (sconf != null && sconf.length() > 0) ?
+                    Choices.getConfidenceValue(sconf) : Choices.CF_UNSET;
+            item.addMetadata(schema, element, qualifier, lang, field.getText(), authority, confidence);
+        }
+        else
+        {
+            item.addMetadata(schema, element, qualifier, lang, field.getText());
+        }
     }
 
     /**

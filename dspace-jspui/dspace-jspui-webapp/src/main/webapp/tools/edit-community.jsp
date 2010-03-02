@@ -53,6 +53,7 @@
 <%@ page import="org.dspace.app.webui.servlet.admin.EditCommunitiesServlet" %>
 <%@ page import="org.dspace.content.Bitstream" %>
 <%@ page import="org.dspace.content.Community" %>
+<%@ page import="org.dspace.eperson.Group" %>
 <%@ page import="org.dspace.app.webui.util.UIUtil" %>
 <%@ page import="org.dspace.core.Utils" %>
 
@@ -62,14 +63,28 @@
 <%
     Community community = (Community) request.getAttribute("community");
     int parentID = UIUtil.getIntParameter(request, "parent_community_id");
-    Boolean admin_b = (Boolean)request.getAttribute("admin_button");
-    boolean admin_button = (admin_b == null ? false : admin_b.booleanValue());
+    // Is the logged in user a sys admin
+    Boolean admin = (Boolean)request.getAttribute("is.admin");
+    boolean isAdmin = (admin == null ? false : admin.booleanValue());
     
+    Boolean adminCreateGroup = (Boolean)request.getAttribute("admin_create_button");
+    boolean bAdminCreateGroup = (adminCreateGroup == null ? false : adminCreateGroup.booleanValue());
+
+    Boolean adminRemoveGroup = (Boolean)request.getAttribute("admin_remove_button");
+    boolean bAdminRemoveGroup = (adminRemoveGroup == null ? false : adminRemoveGroup.booleanValue());
+    
+    Boolean policy = (Boolean)request.getAttribute("policy_button");
+    boolean bPolicy = (policy == null ? false : policy.booleanValue());
+
+    Boolean delete = (Boolean)request.getAttribute("delete_button");
+    boolean bDelete = (delete == null ? false : delete.booleanValue());
+
     String name = "";
     String shortDesc = "";
     String intro = "";
     String copy = "";
     String side = "";
+    Group admins = null;
 
     Bitstream logo = null;
     
@@ -81,6 +96,7 @@
         copy = community.getMetadata("copyright_text");
         side = community.getMetadata("side_bar_text");
         logo = community.getLogo();
+        admins = community.getAdministrators();
     }
 %>
 
@@ -107,7 +123,7 @@
         <fmt:param><%= community.getHandle() %></fmt:param>
         </fmt:message>
     </h1>
-    <% if(admin_button ) { %>
+    <% if(bDelete) { %>
       <center>
         <table width="70%">
           <tr>
@@ -188,7 +204,38 @@
 <%  } %>
                 </td>
             </tr>
-    <% if(admin_button ) { %>
+    <% if(bAdminCreateGroup || (admins != null && bAdminRemoveGroup)) { %>
+ <%-- ===========================================================
+     Community Administrators
+     =========================================================== --%>
+            <tr>
+                <td class="submitFormLabel"><fmt:message key="jsp.tools.edit-community.form.label8"/></td>
+                <td>
+			<%  if (admins == null) {
+					if (bAdminCreateGroup) {
+			%>
+                    <input type="submit" name="submit_admins_create" value="<fmt:message key="jsp.tools.edit-community.form.button.create"/>" />
+			<%  	}
+				} 
+				else 
+				{ 
+					if (bAdminCreateGroup) { %>
+                    <input type="submit" name="submit_admins_edit" value="<fmt:message key="jsp.tools.edit-community.form.button.edit"/>" />
+				<%  }
+					if (bAdminRemoveGroup) { %>
+					<input type="submit" name="submit_admins_remove" value="<fmt:message key="jsp.tools.edit-community.form.button.remove"/>" />
+			<%  	}
+				}
+			%>                    
+                </td>
+            </tr>   
+    
+	<% }
+    	
+    if (bPolicy) { 
+    
+    %>
+
 <%-- ===========================================================
      Edit community's policies
      =========================================================== --%>

@@ -56,7 +56,10 @@
 <%@ page import="org.dspace.content.Item" %>
 <%@ page import="org.dspace.core.Utils" %>
 <%@ page import="org.dspace.eperson.Group" %>
+<%@ page import="org.dspace.harvest.HarvestedCollection" %>
+<%@ page import="org.dspace.core.ConfigurationManager" %>
 <%@ page import="javax.servlet.jsp.jstl.fmt.LocaleSupport" %>
+<%@ page import="java.util.Enumeration" %>
 
 <%@ taglib uri="http://www.dspace.org/dspace-tags.tld" prefix="dspace" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -64,8 +67,36 @@
 <%
     Collection collection = (Collection) request.getAttribute("collection");
     Community community = (Community) request.getAttribute("community");
-    Boolean admin_b = (Boolean)request.getAttribute("admin_button");
-    boolean admin_button = (admin_b == null ? false : admin_b.booleanValue());
+
+    Boolean adminCollection = (Boolean)request.getAttribute("admin_collection");
+    boolean bAdminCollection = (adminCollection == null ? false : adminCollection.booleanValue());
+    
+    Boolean adminCreateGroup = (Boolean)request.getAttribute("admin_create_button");
+    boolean bAdminCreateGroup = (adminCreateGroup == null ? false : adminCreateGroup.booleanValue());
+
+    Boolean adminRemoveGroup = (Boolean)request.getAttribute("admin_remove_button");
+    boolean bAdminRemoveGroup = (adminRemoveGroup == null ? false : adminRemoveGroup.booleanValue());
+    
+    Boolean workflowsButton = (Boolean)request.getAttribute("workflows_button");
+    boolean bWorkflowsButton = (workflowsButton == null ? false : workflowsButton.booleanValue());
+    
+    Boolean submittersButton = (Boolean)request.getAttribute("submitters_button");
+    boolean bSubmittersButton = (submittersButton == null ? false : submittersButton.booleanValue());
+    
+    Boolean templateButton = (Boolean)request.getAttribute("template_button");
+    boolean bTemplateButton = (templateButton == null ? false : templateButton.booleanValue());
+
+    Boolean policyButton = (Boolean)request.getAttribute("policy_button");
+    boolean bPolicyButton = (policyButton == null ? false : policyButton.booleanValue());
+    
+    Boolean deleteButton = (Boolean)request.getAttribute("delete_button");
+    boolean bDeleteButton = (deleteButton == null ? false : deleteButton.booleanValue());
+    
+    // Is the logged in user a sys admin
+    Boolean admin = (Boolean)request.getAttribute("is.admin");
+    boolean isAdmin = (admin == null ? false : admin.booleanValue());
+    
+    HarvestedCollection hc = (HarvestedCollection) request.getAttribute("harvestInstance");
     
     String name = "";
     String shortDesc = "";
@@ -74,7 +105,14 @@
     String side = "";
     String license = "";
     String provenance = "";
-
+    
+    String oaiProviderValue= "";
+	String oaiSetIdValue= "";
+	String metadataFormatValue= "";
+	String lastHarvestMsg= "";
+	int harvestLevelValue=0;
+	int harvestStatus= 0;
+	
     Group[] wfGroups = new Group[3];
     wfGroups[0] = null;
     wfGroups[1] = null;
@@ -111,6 +149,17 @@
         template = collection.getTemplateItem();
 
         logo = collection.getLogo();
+                
+        /* Harvesting stuff */
+        if (hc != null) {
+			oaiProviderValue = hc.getOaiSource();
+			oaiSetIdValue = hc.getOaiSetId();
+			metadataFormatValue = hc.getHarvestMetadataConfig();
+			harvestLevelValue = hc.getHarvestType();
+			lastHarvestMsg= hc.getHarvestMessage();
+			harvestStatus = hc.getHarvestStatus();
+		}
+        
     }
 %>
 
@@ -131,17 +180,21 @@
         <fmt:param><%= collection.getHandle() %></fmt:param>
         </fmt:message>
     </h1>
-    <% if(admin_button ) { %>
+    
       <center>
         <table width="70%">
           <tr>
             <td class="standard">
+<% if(bDeleteButton) { %>
               <form method="post" action="">
                 <input type="hidden" name="action" value="<%= EditCommunitiesServlet.START_DELETE_COLLECTION %>" />
                 <input type="hidden" name="community_id" value="<%= community.getID() %>" />
                 <input type="hidden" name="collection_id" value="<%= collection.getID() %>" />
                 <input type="submit" name="submit" value="<fmt:message key="jsp.tools.edit-collection.button.delete"/>" />
               </form>
+<% } else { %>
+			&nbsp;
+<% } %>
             </td>
             <td align="right" class="standard">
                <dspace:popup page="/help/site-admin.html#editcollection"><fmt:message key="jsp.help"/></dspace:popup>
@@ -149,7 +202,7 @@
           </tr>
         </table>
       </center>
-    <% } %>
+    
 <% } %>
 
     <form method="post" action="<%= request.getContextPath() %>/tools/edit-communities">
@@ -223,9 +276,12 @@
             </tr>
             
             <tr><td>&nbsp;</td></tr>
+<% if(bSubmittersButton || bWorkflowsButton || bAdminCreateGroup || (admins != null && bAdminRemoveGroup)) { %>
             <tr><td colspan="2"><center><h3><fmt:message key="jsp.tools.edit-collection.form.label9"/></h3></center></td></tr>
 
-<% if(admin_button ) { %>
+<% }
+	
+   if(bSubmittersButton) { %>
 <%-- ===========================================================
      Collection Submitters
      =========================================================== --%>
@@ -240,7 +296,9 @@
 <%  } %>                    
                 </td>
             </tr>   
-            
+<%  } %>            
+
+<% if(bWorkflowsButton) { %>
 <%-- ===========================================================
      Workflow groups
      =========================================================== --%>
@@ -265,24 +323,36 @@
                 </td>
             </tr>
 <%  } %>
-
+<%  } %>        
             <tr><td>&nbsp;</td></tr>
-
+<% if(bAdminCreateGroup || (admins != null && bAdminRemoveGroup)) { %>
 <%-- ===========================================================
      Collection Administrators
      =========================================================== --%>
             <tr>
                 <td class="submitFormLabel"><fmt:message key="jsp.tools.edit-collection.form.label12"/></td>
                 <td>
-<%  if (admins == null) {%>
+<%  if (admins == null) {
+		if (bAdminCreateGroup) {
+%>
                     <input type="submit" name="submit_admins_create" value="<fmt:message key="jsp.tools.edit-collection.form.button.create"/>" />
-<%  } else { %>
+<%  	} 
+	} 
+	else { 
+		if (bAdminCreateGroup) {
+	%>
                     <input type="submit" name="submit_admins_edit" value="<fmt:message key="jsp.tools.edit-collection.form.button.edit"/>" />
+	<%  }
+		if (bAdminRemoveGroup) { 
+		%>
                     <input type="submit" name="submit_admins_delete" value="<fmt:message key="jsp.tools.edit-collection.form.button.delete"/>" />
-<%  } %>                    
+<%  	}
+	}	%>                    
                 </td>
             </tr>   
-<%  } %>
+<% } %>
+
+<% if(bTemplateButton) { %>
 <%-- ===========================================================
      Item template
      =========================================================== --%>
@@ -297,8 +367,10 @@
                     <input type="submit" name="submit_delete_template" value="<fmt:message key="jsp.tools.edit-collection.form.button.delete"/>" />
 <%  } %>                    
                 </td>
-            </tr>   
-<% if(admin_button ) { %>
+            </tr>
+<%  } %>
+   
+<% if(bPolicyButton) { %>
 <%-- ===========================================================
      Edit collection's policies
      =========================================================== --%>
@@ -309,6 +381,105 @@
                 </td>
             </tr>   
 <%  } %>
+
+
+
+
+
+
+
+            
+
+<% if(bAdminCollection) { %>
+<%-- ===========================================================
+     Harvesting Settings
+     =========================================================== --%>
+     
+     		<tr><td>&nbsp;</td></tr>
+            <tr><td colspan="2"><center><h3>Harvesting Settings</h3></center></td></tr>
+     
+     		<%--
+     		oaiProviderValue = hc.getOaiSource();
+			oaiSetIdValue = hc.getOaiSetId();
+			metadataFormatValue = hc.getHarvestMetadataConfig();
+			harvestLevelValue = hc.getHarvestType();
+			String lastHarvestMsg= hc.getHarvestMessage();
+			int harvestStatus = hc.getHarvestStatus();
+			
+			if (lastHarvestMsg == null)
+				lastHarvestMsg = "none";
+			--%>
+     
+     		<tr>
+                <td class="submitFormLabel">Content Source</td>
+                <td>
+                	<input type="radio" value="source_normal" <% if (harvestLevelValue == 0) { %> checked="checked" <% } %> name="source">This is a standard DSpace collection</input><br/>
+                	<input type="radio" value="source_harvested" <% if (harvestLevelValue > 0) { %> checked="checked" <% } %> name="source">This collection harvests its content from an external source</input><br/>
+                </td>
+            </tr>
+            <tr>
+                <td class="submitFormLabel">OAI Provider</td>
+                <td><input type="text" name="oai_provider" value="<%= oaiProviderValue %>" size="50" /></td>
+            </tr>
+            <tr>
+                <td class="submitFormLabel">OAI Set Id</td>
+                <td><input type="text" name="oai_setid" value="<%= oaiSetIdValue %>" size="50" /></td>
+            </tr>   
+            <tr>
+                <td class="submitFormLabel">Metadata Format</td>
+                <td>
+                	<select name="metadata_format" >
+	                	<%
+		                // Add an entry for each instance of ingestion crosswalks configured for harvesting 
+			            String metaString = "harvester.oai.metadataformats.";
+			            Enumeration pe = ConfigurationManager.propertyNames();
+			            while (pe.hasMoreElements())
+			            {
+			                String key = (String)pe.nextElement();
+			                if (key.startsWith(metaString)) {
+			                	String metadataString = ConfigurationManager.getProperty(key);
+			                	String metadataKey = key.substring(metaString.length());
+			                	String displayName;
+			
+			                	if (metadataString.indexOf(',') != -1)
+			                		displayName = metadataString.substring(metadataString.indexOf(',') + 1);
+			                	else
+			                		displayName = metadataKey + "(" + metadataString + ")";
+			                	
+			                	%>
+			                	<option value="<%= metadataKey %>" 
+			                	<% if(metadataKey.equalsIgnoreCase(metadataFormatValue)) { %> 
+			                	selected="selected" <% } %> >
+			                	<%= displayName %></option>
+			                	<% 
+			                }
+			            }
+		                %>
+					</select>
+                </td>
+            </tr>
+            <tr>
+                <td class="submitFormLabel">Content being Harvested</td>
+                <td>
+                	<input type="radio" value="1" <% if (harvestLevelValue != 2 && harvestLevelValue != 3) { %> checked="checked" <% } %> name="harvest_level">Harvest metadata only.</input><br/>
+                	<input type="radio" value="2" <% if (harvestLevelValue == 2) { %> checked="checked" <% } %> name="harvest_level">Harvest metadata and references to bitstreams (requires ORE support).</input><br/>
+                	<input type="radio" value="3" <% if (harvestLevelValue == 3) { %> checked="checked" <% } %> name="harvest_level">Harvest metadata and bitstreams (requires ORE support).</input><br/>
+                </td>
+            </tr>
+            <tr>
+                <td class="submitFormLabel">Last Harvest Result</td>
+                <td><%= lastHarvestMsg %></td>
+            </tr> 
+            <!--
+            <tr>
+                <td class="submitFormLabel">Current Status</td>
+                <td> </td>
+            </tr>
+            --> 
+
+
+<%  } %>
+
 
         </table>
         

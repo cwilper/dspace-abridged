@@ -3,21 +3,20 @@
  *
  * Version: $Revision$
  *
- * Copyright (c) 2009, The DSpace Foundation.  All rights reserved.
+ * Copyright (c) 2002-2009, The DSpace Foundation.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * - Neither the name of the Hewlett-Packard Company nor the name of the
- * Massachusetts Institute of Technology nor the names of their
+ * - Neither the name of the DSpace Foundation nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  *
@@ -72,6 +71,10 @@ public class ShibAuthentication implements AuthenticationMethod
     public int authenticate(Context context, String username, String password,
             String realm, HttpServletRequest request) throws SQLException
     {
+        if (request == null)
+        {
+            return BAD_ARGS;
+        }
         log.info("Shibboleth login started...");
 
         java.util.Enumeration names = request.getHeaderNames();
@@ -204,6 +207,8 @@ public class ShibAuthentication implements AuthenticationMethod
         {
             // the person exists, just return ok
             context.setCurrentUser(eperson);
+            request.getSession().setAttribute("shib.authenticated",
+                    new Boolean("true"));
         }
 
         return AuthenticationMethod.SUCCESS;
@@ -216,7 +221,13 @@ public class ShibAuthentication implements AuthenticationMethod
      */
     public int[] getSpecialGroups(Context context, HttpServletRequest request)
     {
-
+        // no user logged in or user not logged from shibboleth
+        if (request == null || context.getCurrentUser() == null
+                || request.getSession().getAttribute("shib.authenticated") == null)
+        {
+            return new int[0];
+        }
+                
         if (request.getSession().getAttribute("shib.specialgroup") != null)
         {
             return (int[]) request.getSession().getAttribute(

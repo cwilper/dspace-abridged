@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.dspace.app.webui.util.UIUtil;
 import org.dspace.authorize.AuthorizeException;
+import org.dspace.authorize.AuthorizeManager;
 import org.dspace.browse.BrowseEngine;
 import org.dspace.browse.BrowseException;
 import org.dspace.browse.BrowseIndex;
@@ -119,6 +120,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             String startsWith = request.getParameter("starts_with");
             String valueFocus = request.getParameter("vfocus");
             String valueFocusLang = request.getParameter("vfocus_lang");
+            String authority = request.getParameter("authority");
             int focus = UIUtil.getIntParameter(request, "focus");
             int offset = UIUtil.getIntParameter(request, "offset");
             int resultsperpage = UIUtil.getIntParameter(request, "rpp");
@@ -228,7 +230,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
 
             // determine which level of the browse we are at: 0 for top, 1 for second
             int level = 0;
-            if (value != null)
+            if (value != null || authority != null)
             {
                 level = 1;
             }
@@ -280,7 +282,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             BrowserScope scope = new BrowserScope(context);
             scope.setBrowseIndex(bi);
             scope.setOrder(order);
-            scope.setFilterValue(value);
+            scope.setFilterValue(value != null?value:authority);
             scope.setFilterValueLang(valueLang);
             scope.setJumpToItem(focus);
             scope.setJumpToValue(valueFocus);
@@ -291,6 +293,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             scope.setSortBy(sortBy);
             scope.setBrowseLevel(level);
             scope.setEtAl(etAl);
+            scope.setAuthorityValue(authority);
 
             // assign the scope of either Community or Collection if necessary
             if (community != null)
@@ -337,8 +340,14 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             // now start up a browse engine and get it to do the work for us
             BrowseEngine be = new BrowseEngine(context);
             BrowseInfo binfo = be.browse(scope);
-
+            
             request.setAttribute("browse.info", binfo);
+
+            if (AuthorizeManager.isAdmin(context))
+            {
+                // Set a variable to create admin buttons
+                request.setAttribute("admin_button", new Boolean(true));
+            }
 
             if (binfo.hasResults())
             {

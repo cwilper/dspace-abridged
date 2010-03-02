@@ -135,10 +135,10 @@
   
   <tr class="navigationBarItem">
     <td>
-      <img alt="" src="<%= request.getContextPath() %>/image/<%= (currentPage.endsWith("/dspace-admin/authorize") ? "arrow-highlight" : "arrow") %>.gif" width="16" height="16"/>
+      <img alt="" src="<%= request.getContextPath() %>/image/<%= (currentPage.endsWith("/tools/authorize") ? "arrow-highlight" : "arrow") %>.gif" width="16" height="16"/>
     </td>
     <td nowrap="nowrap" class="navigationBarItem">
-      <a href="<%= request.getContextPath() %>/dspace-admin/authorize"><fmt:message key="jsp.layout.navbar-admin.authorization"/></a>
+      <a href="<%= request.getContextPath() %>/tools/authorize"><fmt:message key="jsp.layout.navbar-admin.authorization"/></a>
     </td>
   </tr>
   
@@ -168,13 +168,22 @@
       <a href="<%= request.getContextPath() %>/dspace-admin/supervise"><fmt:message key="jsp.layout.navbar-admin.supervisors"/></a>
     </td>
   </tr>
-  
+
   <tr class="navigationBarItem">
     <td>
       <img alt="" src="<%= request.getContextPath() %>/image/<%= (currentPage.endsWith("/statistics") ? "arrow-highlight" : "arrow") %>.gif" width="16" height="16"/>
     </td>
     <td nowrap="nowrap" class="navigationBarItem">
       <a href="<%= request.getContextPath() %>/statistics"><fmt:message key="jsp.layout.navbar-admin.statistics"/></a>
+    </td>
+  </tr>
+    
+  <tr class="navigationBarItem">
+    <td>
+      <img alt="" src="<%= request.getContextPath() %>/image/<%= (currentPage.endsWith("/metadataimport") ? "arrow-highlight" : "arrow") %>.gif" width="16" height="16"/>
+    </td>
+    <td nowrap="nowrap" class="navigationBarItem">
+      <a href="<%= request.getContextPath() %>/dspace-admin/metadataimport"><fmt:message key="jsp.layout.navbar-admin.metadataimport"/></a>
     </td>
   </tr>
   
