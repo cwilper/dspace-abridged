@@ -1,5 +1,83 @@
-1.6.0
+1.6.1
 =====
+
+(Javier Garrido)
+- [DS-582] Basque translation (of jspui for DSpace 1.5.2)
+
+(Mark Diggory)
+- [DS-571] Upgrade DSpace Services to next release 2.0.1
+
+
+(Dale Poulter)
+- [DS-557] LC Authority Names - Lookup Feature - names w/o dates
+
+(Paulo Jobim)
+- [DS-471] Accessing site-level 'mets.xml' in XMLUI doesn't work properly for handle prefixes with periods (e.g. 2010.1)
+
+(Yin Yin Latt)
+- [DS-565] Empty description column in Itemview Page - General-Handler.xsl
+- [DS-566] Side bar menu dropping when there is license text in collection - DIM-Handler.xsl
+
+(Robin Taylor)
+- [DS-497] Date month and day get default values when user returns to describe form
+- [DS-501] Change kubrick.xsl to check for the presence of a day and month before displaying them
+
+(Keiji Suzuki)
+- [DS-537] Malformed Japanese option values in the authority lookup window
+
+(Peter Dietz)
+- [DS-509] SOLR returns ArrayIndexOutOfBounds with non-existent country code OR when there is no view/download data
+- [DS-542] verbose output for stats-log-importer displays spurious city/country from previous committed entry
+
+(Kim Shepherd)
+- [DS-547] Value for Recent Submissions is not workin in the XMLUI
+- [DS-527] Withdrawn items not shown as deleted in OAI
+- [DS-548] Removing repeatable values in DescribeStep does not properly test for authority control
+- [DS-544] Removal of mapped items can lead to NPE
+
+(Claudia Jurgen)
+- [DS-558] Error in update sequence script 1.5 to 1.6 Oracle
+- [DS-551] Export directories dspace.cfg and build.xml out of sync
+- [DS-543] Harvest not internationalized
+
+(Serhij Dubyk)
+- [DS-500] Ukrainian for DSpace 1.6.0
+
+(Andrea Bollini)
+ - [DS-513] Connection leak in SWORD authentication process 
+ - [DS-581] DIDL doesn't respect the hidden fields and the oai_dc metadata section is different than the simple oai_dc implementation
+ - [DS-580] DIDL format include HTML element if the item has no files
+ - [DS-574] DSpaceMETSIngester creates empty original bundle
+ - [DS-573] NPE resuming submission for item with an empty bundle original
+ 
+(Caryn Neiswender)
+ - [DS-518] Duplicate listing of dependencies in dspace-sword/pom.xml
+
+(Keith Gilbertson)
+ - [DS-123] xmlui browse in empty collection displays "Now showing items 1-0" of 0 - incorrect numbering
+ - [DS-508] Attachment spelled as attachement in DailyReportEmailer
+ - [DS-539] Misspelled attribute in MODS/METS output
+
+(Stuart Lewis)
+ - [DS-242] Special groups shown for logged in user rather than for user being examined
+ - [DS-506] embargo-lifter command missing from launcher.xml
+ - [DS-516] DSRUN does not start Service Manager
+ - [DS-526] ItemUpdate - script update
+ - [DS-572] Batch metadata editor fails to notice change of item's owning collection
+
+(Mark Wood)
+ - [DS-469] DCDate.displayDate(false,*) displays only year
+
+ (Ivan Masar)
+ - [DS-515] Czech localization of 1.5.2
+
+(Ben Bosman)
+ - [DS-579] Required fields in submissions display wrong error message
+ - [DS-538] restricted items are being returned in OAI GetRecord method while using harvest.includerestricted.oai
+ - [DS-493] Url in browser is incorrect after login
+
+1.6.0 final
+===========
 
 (Alexey Maslov)
  - [DS-289] OAI-PMH + OAI-ORE harvesting support

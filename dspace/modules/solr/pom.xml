@@ -7,18 +7,9 @@
    <description>
       DSpace SOLR Service Provider Web Application
    </description>
+   <version>1.6.1</version>
 
-   <!--
-      A Parent POM that Maven inherits DSpace Default POM atrributes
-      from.
-   -->
-   <parent>
-      <groupId>org.dspace</groupId>
-      <artifactId>modules</artifactId>
-      <version>1.6.0</version>
-   </parent>
-
-   <repositories>
+    <repositories>
       <repository>
          <id>maven.dspace.org/snapshot</id>
          <name>DSpace Maven Snapshot Repository</name>
@@ -40,9 +31,9 @@
       and releases snapshots into the snapshot repository below.
    -->
    <scm>
-      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.0</connection>
-      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.0</developerConnection>
-      <url>http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.0</url>
+      <connection>scm:svn:http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.1</connection>
+      <developerConnection>scm:svn:https://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.1</developerConnection>
+      <url>http://dspace.svn.sourceforge.net/svnroot/dspace/tags/dspace-1.6.1</url>
    </scm>
 
    <build>
@@ -72,6 +63,14 @@
    		<classifier>skinny</classifier>
    		<type>war</type>
    	</dependency>
+
+    <!-- support odd cases where JAXP cannot be found in JVM -->
+    <dependency>
+        <groupId>xalan</groupId>
+        <artifactId>xalan</artifactId>
+        <version>2.7.0</version>
+    </dependency>
+       
    </dependencies>
 
 </project>

@@ -10,7 +10,7 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-xmlui</artifactId>
-      <version>1.6.0</version>
+      <version>1.6.1</version>
    </parent>
 
    <repositories>
@@ -31,9 +31,9 @@
    </repositories>
 
    <scm>
-      <connection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.0</connection>
-      <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.0/dspace-xmlui/dspace-xmlui-wing</developerConnection>
-      <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.0/dspace-xmlui/dspace-xmlui-wing</url>
+      <connection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.1</connection>
+      <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.1/dspace-xmlui/dspace-xmlui-wing</developerConnection>
+      <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.6.1/dspace-xmlui/dspace-xmlui-wing</url>
    </scm>
 
    <dependencies>
@@ -67,15 +67,21 @@
       </dependency>
       
       <dependency>
-      	<groupId>org.apache.cocoon</groupId>
-      	<artifactId>cocoon-servlet-service-impl</artifactId>
-      	<version>1.2.0</version>
+          <groupId>org.apache.cocoon</groupId>
+          <artifactId>cocoon-servlet-service-components</artifactId>
+          <version>1.0.0</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.apache.cocoon</groupId>
+      	          <artifactId>cocoon-servlet-service-impl</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
       
       <dependency>
-      	<groupId>org.apache.cocoon</groupId>
-      	<artifactId>cocoon-linkrewriter-impl</artifactId>
-      	<version>1.0.0</version>
+      	<groupId>org.dspace.dependencies.cocoon</groupId>
+      	<artifactId>dspace-cocoon-servlet-service-impl</artifactId>
+      	<version>1.0.1</version>
       </dependency>
       
       <dependency>
