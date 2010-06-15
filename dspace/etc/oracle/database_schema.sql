@@ -1,9 +1,9 @@
 --
 -- database_schema.sql (ORACLE version!)
 --
--- Version: $Revision$
+-- Version: $Revision: 4719 $
 --
--- Date:    $Date$
+-- Date:    $Date: 2010-01-22 18:37:13 +0000 (Fri, 22 Jan 2010) $
 --
 -- Copyright (c) 2002-2009, The DSpace Foundation.  All rights reserved.
 --

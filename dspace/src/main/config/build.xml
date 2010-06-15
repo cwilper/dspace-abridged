@@ -35,8 +35,8 @@
 <!--
   - DSpace build file
   -
-  - Version:  $Revision$
-  - Date:     $Date$
+  - Version:  $Revision: 4884 $
+  - Date:     $Date: 2010-05-05 07:48:15 +0000 (Wed, 05 May 2010) $
   -->
 
 <project name="DSpace" default="help">
