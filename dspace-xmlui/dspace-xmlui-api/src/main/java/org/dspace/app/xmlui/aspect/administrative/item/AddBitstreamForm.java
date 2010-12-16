@@ -1,57 +1,16 @@
-/*
- * AddBitstreamForm.java
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
  *
- * Version: $Revision$
- *
- * Date: $Date$
- *
- * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
- * Institute of Technology.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * - Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *
- * - Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * - Neither the name of the Hewlett-Packard Company nor the name of the
- * Massachusetts Institute of Technology nor the names of their
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ * http://www.dspace.org/license/
  */
 package org.dspace.app.xmlui.aspect.administrative.item;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Map;
 
-import org.apache.avalon.framework.parameters.Parameters;
-import org.apache.cocoon.ProcessingException;
-import org.apache.cocoon.components.flow.FlowHelper;
-import org.apache.cocoon.environment.ObjectModelHelper;
-import org.apache.cocoon.environment.Request;
-import org.apache.cocoon.environment.SourceResolver;
 import org.dspace.app.xmlui.cocoon.AbstractDSpaceTransformer;
-import org.dspace.app.xmlui.utils.ContextUtil;
 import org.dspace.app.xmlui.utils.UIException;
 import org.dspace.app.xmlui.wing.Message;
 import org.dspace.app.xmlui.wing.WingException;
@@ -87,7 +46,7 @@ public class AddBitstreamForm extends AbstractDSpaceTransformer
 	private static final Message T_submit_cancel = message("xmlui.general.cancel");
 	private static final Message T_item_trail = message("xmlui.administrative.item.general.item_trail");
 
-	private static final Message T_title = message("xmlui.administrative.item.AddBitstreamForm.title.");
+	private static final Message T_title = message("xmlui.administrative.item.AddBitstreamForm.title");
 	private static final Message T_trail = message("xmlui.administrative.item.AddBitstreamForm.trail");
 	private static final Message T_head1 = message("xmlui.administrative.item.AddBitstreamForm.head1");
 	private static final Message T_bundle_label = message("xmlui.administrative.item.AddBitstreamForm.bundle_label");
@@ -100,7 +59,7 @@ public class AddBitstreamForm extends AbstractDSpaceTransformer
 	private static final Message T_no_bundles = message("xmlui.administrative.item.AddBitstreamForm.no_bundles");
 
 	
-	private static String DEFAULT_BUNDLE_LIST = "ORIGINAL, METADATA, THUMBNAIL, LICENSE, CC_LICENSE";
+	private static final String DEFAULT_BUNDLE_LIST = "ORIGINAL, METADATA, THUMBNAIL, LICENSE, CC_LICENSE";
 		
 	public void addPageMeta(PageMeta pageMeta) throws WingException
 	{
@@ -132,17 +91,23 @@ public class AddBitstreamForm extends AbstractDSpaceTransformer
 		// or one supplied from the dspace.cfg.
 		String bundleString = ConfigurationManager.getProperty("xmlui.bundle.upload");
         if (bundleString == null || bundleString.length() == 0)
-        	bundleString = DEFAULT_BUNDLE_LIST;
+        {
+            bundleString = DEFAULT_BUNDLE_LIST;
+        }
         String[] parts = bundleString.split(",");
         for (String part : parts)
         {
         	if (addBundleOption(item,select,part.trim()))
-        		bundleCount++;
+            {
+                bundleCount++;
+            }
         }
         select.setOptionSelected("ORIGINAL");
 		
 		if (bundleCount == 0)
-			select.setDisabled();
+        {
+            select.setDisabled();
+        }
 		
 
 		File file = upload.addItem().addFile("file");
@@ -151,24 +116,32 @@ public class AddBitstreamForm extends AbstractDSpaceTransformer
 		file.setRequired();
 
 		if (bundleCount == 0)
-			file.setDisabled();
+        {
+            file.setDisabled();
+        }
 		
 		Text description = upload.addItem().addText("description");
 		description.setLabel(T_description_label);
 		description.setHelp(T_description_help);
 
 		if (bundleCount == 0)
-			description.setDisabled();
+        {
+            description.setDisabled();
+        }
 		
 		if (bundleCount == 0)
-			upload.addItem().addContent(T_no_bundles);
+        {
+            upload.addItem().addContent(T_no_bundles);
+        }
 		
 		// ITEM: actions
 		Item actions = upload.addItem();
 		Button button = actions.addButton("submit_upload");
 		button.setValue(T_submit_upload);
 		if (bundleCount == 0)
-			button.setDisabled();
+        {
+            button.setDisabled();
+        }
 		
 		actions.addButton("submit_cancel").setValue(T_submit_cancel);
 
@@ -186,18 +159,24 @@ public class AddBitstreamForm extends AbstractDSpaceTransformer
 			// to upload to this bundle because at upload time the bundle will be created but
 			// there is no way anyone but super admin could have access to add to the bundle.
 			if ( ! AuthorizeManager.isAdmin(context))
-				return false; // you can't upload to this bundle.
+            {
+                return false;  // you can't upload to this bundle.
+            }
 		}
 		else
 		{
 			// At least one bundle exists, does the user have privleges to upload to it?
 			Bundle bundle = bundles[0];
 			if ( ! AuthorizeManager.authorizeActionBoolean(context, bundle, Constants.ADD))
-				return false; // you can't upload to this bundle.
+            {
+                return false; // you can't upload to this bundle.
+            }
 			
 			// You also need the write privlege on the bundle.
 			if ( ! AuthorizeManager.authorizeActionBoolean(context, bundle, Constants.WRITE))
-				return false; // you can't upload.
+            {
+                return false;  // you can't upload
+            }
 		}
 		
 		// It's okay to upload.

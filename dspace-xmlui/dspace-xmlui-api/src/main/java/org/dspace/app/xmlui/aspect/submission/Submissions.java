@@ -1,41 +1,9 @@
-/*
- * Submissions.java
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
  *
- * Version: $Revision$
- *
- * Date: $Date$
- *
- * Copyright (c) 2002, Hewlett-Packard Company and Massachusetts
- * Institute of Technology.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * - Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *
- * - Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * - Neither the name of the Hewlett-Packard Company nor the name of the
- * Massachusetts Institute of Technology nor the names of their
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ * http://www.dspace.org/license/
  */
 package org.dspace.app.xmlui.aspect.submission;
 
@@ -223,7 +191,9 @@ public class Submissions extends AbstractDSpaceTransformer
     	
     	if (!(ownedItems.size() > 0 || pooledItems.size() > 0))
     		// No tasks, so don't show the table.
-    		return;
+        {
+            return;
+        }
     	
     	
     	Division workflow = division.addDivision("workflow-tasks");
@@ -268,11 +238,15 @@ public class Submissions extends AbstractDSpaceTransformer
         		{
         			String displayTitle = titles[0].value;
         			if (displayTitle.length() > 50)
-        				displayTitle = displayTitle.substring(0,50)+ " ...";
+                    {
+                        displayTitle = displayTitle.substring(0, 50) + " ...";
+                    }
         			row.addCell().addXref(url,displayTitle);
         		}
         		else
-        			row.addCell().addXref(url,T_untitled);
+                {
+                    row.addCell().addXref(url, T_untitled);
+                }
 
         		// Submitted too
         		row.addCell().addXref(url,collectionName);
@@ -337,12 +311,16 @@ public class Submissions extends AbstractDSpaceTransformer
         		{
         			String displayTitle = titles[0].value;
         			if (displayTitle.length() > 50)
-        				displayTitle = displayTitle.substring(0,50)+ " ...";
+                    {
+                        displayTitle = displayTitle.substring(0, 50) + " ...";
+                    }
         			
         			row.addCell().addXref(url,displayTitle);
         		}
         		else
-        			row.addCell().addXref(url,T_untitled);
+                {
+                    row.addCell().addXref(url, T_untitled);
+                }
 
         		// Submitted too
         		row.addCell().addXref(url,collectionName);
@@ -410,9 +388,13 @@ public class Submissions extends AbstractDSpaceTransformer
     	// Each list pluss the top header and bottom row for the button.
     	int rows = unfinishedItems.length + supervisedItems.length + 2;
     	if (supervisedItems.length > 0 && unfinishedItems.length > 0)
-    		rows++; // Authoring heading row
+        {
+            rows++; // Authoring heading row
+        }
     	if (supervisedItems.length > 0)
-    		rows++; // Supervising heading row
+        {
+            rows++; // Supervising heading row
+        }
     	
     	
     	Table table = unfinished.addTable("unfinished-submissions",rows,5);
@@ -450,11 +432,15 @@ public class Submissions extends AbstractDSpaceTransformer
 	        	{
 	        		String displayTitle = titles[0].value;
         			if (displayTitle.length() > 50)
-        				displayTitle = displayTitle.substring(0,50)+ " ...";
+                    {
+                        displayTitle = displayTitle.substring(0, 50) + " ...";
+                    }
 	        		row.addCell().addXref(url,displayTitle);
 	        	}
 	        	else
-	        		row.addCell().addXref(url,T_untitled);
+                {
+                    row.addCell().addXref(url, T_untitled);
+                }
 	        	row.addCell().addXref(url,collectionName);
 	        	Cell cell = row.addCell();
 	        	cell.addContent(T_email);
@@ -495,11 +481,15 @@ public class Submissions extends AbstractDSpaceTransformer
         	{
         		String displayTitle = titles[0].value;
     			if (displayTitle.length() > 50)
-    				displayTitle = displayTitle.substring(0,50)+ " ...";
+                {
+                    displayTitle = displayTitle.substring(0, 50) + " ...";
+                }
         		row.addCell().addXref(url,displayTitle);
         	}
         	else
-        		row.addCell().addXref(url,T_untitled);
+            {
+                row.addCell().addXref(url, T_untitled);
+            }
         	row.addCell().addXref(url,collectionName);
         	Cell cell = row.addCell();
         	cell.addContent(T_email);
@@ -510,7 +500,9 @@ public class Submissions extends AbstractDSpaceTransformer
         header = table.addRow();
         Cell lastCell = header.addCell(0,5);
         if (unfinishedItems.length > 0 || supervisedItems.length > 0)
-        	lastCell.addButton("submit_submissions_remove").setValue(T_s_submit_remove);
+        {
+            lastCell.addButton("submit_submissions_remove").setValue(T_s_submit_remove);
+        }
     }
     
     
@@ -525,7 +517,9 @@ public class Submissions extends AbstractDSpaceTransformer
 
     	// If there is nothing in progress then don't add anything.
     	if (!(inprogressItems.length > 0))
-    			return;
+        {
+            return;
+        }
     	
     	Division inprogress = division.addDivision("submissions-inprogress");
     	inprogress.setHead(T_p_head1);
@@ -553,11 +547,15 @@ public class Submissions extends AbstractDSpaceTransformer
         	{
         		String displayTitle = titles[0].value;
     			if (displayTitle.length() > 50)
-    				displayTitle = displayTitle.substring(0,50)+ " ...";
+                {
+                    displayTitle = displayTitle.substring(0, 50) + " ...";
+                }
         		row.addCellContent(displayTitle);
         	}
         	else
-        		row.addCellContent(T_untitled);
+            {
+                row.addCellContent(T_untitled);
+            }
         	
         	// Collection name column
         	row.addCellContent(collectionName);
