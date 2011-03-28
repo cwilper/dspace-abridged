@@ -8,6 +8,7 @@
 package org.dspace.discovery;
 
 import org.apache.commons.collections.ExtendedProperties;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -699,7 +700,10 @@ public class SolrServiceImpl implements SearchService, IndexingService {
 
                 if(SearchUtils.getAllFacets().contains(field) || SearchUtils.getAllFacets().contains(unqualifiedField + "." + Item.ANY)){
                     //Add a special filter
-                    doc.addField(field + "_filter", value);
+                    //We use a separator to split up the lowercase and regular case, this is needed to get our filters in regular case
+                    //Solr has issues with facet prefix and cases
+                    String separator = SearchUtils.getConfig().getString("solr.facets.split.char", SearchUtils.FILTER_SEPARATOR);
+                    doc.addField(field + "_filter", value.toLowerCase() + separator + value);
                 }
 
                 if(SearchUtils.getSortFields().contains(field) && !sortFieldsAdded.contains(field)){
@@ -773,9 +777,7 @@ public class SolrServiceImpl implements SearchService, IndexingService {
                             readers.add(is);
 
                             // Add each InputStream to the Indexed Document
-                            // (Acts like an Append)
-//							doc.addField("default", is);
-                            //doc.add(new Field("default", is));
+							doc.addField("fulltext", IOUtils.toString(is));
 
                             log.debug("  Added BitStream: "
                                     + myBitstreams[j].getStoreNumber() + "	"

@@ -169,12 +169,18 @@ public class Navigation extends AbstractDSpaceTransformer implements CacheablePr
     
     public void setup(SourceResolver resolver, Map objectModel, String src, Parameters parameters) throws ProcessingException, SAXException, IOException {
     	super.setup(resolver, objectModel, src, parameters);
-    	try{
-    		availableExports = ItemExport.getExportsAvailable(context.getCurrentUser());
-    	}
-    	catch (Exception e) {
-    		// nothing to do
-    	}
+        availableExports = null;
+        if (context.getCurrentUser() != null)
+        {
+            try
+            {
+                availableExports = ItemExport.getExportsAvailable(context.getCurrentUser());
+            }
+            catch (Exception e)
+            {
+                throw new ProcessingException("Error getting available exports", e);
+            }
+        }
     }
     
     
@@ -258,7 +264,7 @@ public class Navigation extends AbstractDSpaceTransformer implements CacheablePr
             }
     	}
     	
-    	if (isSystemAdmin && "community-list".equals(this.sitemapURI))
+    	if (isSystemAdmin && ("community-list".equals(this.sitemapURI) || "".equals(this.sitemapURI)))
     	{
             // Only System administrators can create top-level communities
             context.setHead(T_context_head);
@@ -341,7 +347,7 @@ public class Navigation extends AbstractDSpaceTransformer implements CacheablePr
             }
     	}
     	
-    	if ("community-list".equals(this.sitemapURI) && AuthorizeManager.isAdmin(this.context))
+    	if (("community-list".equals(this.sitemapURI) || "".equals(this.sitemapURI)) && AuthorizeManager.isAdmin(this.context))
     	{
             context.addItemXref(contextPath+"/admin/community?createNew", T_context_create_community);
             options++;

@@ -480,7 +480,7 @@
             <!--Treats the entire field as a single token, regardless of its content-->
             <tokenizer class="solr.KeywordTokenizerFactory"/>
 
-            <filter class="solr.LowerCaseFilterFactory" />
+            <!--<filter class="solr.LowerCaseFilterFactory" />-->
         </analyzer>
     </fieldType>
  </types>
@@ -516,6 +516,9 @@
    <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
     <field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
+
+
+   <field name="fulltext" type="text" indexed="true" stored="false" multiValued="true"/>
 
     <!-- Internal DSpace Object ID -->
    <field name="search.resourceid" type="sint" indexed="true" stored="true" required="true" omitNorms="true" />
