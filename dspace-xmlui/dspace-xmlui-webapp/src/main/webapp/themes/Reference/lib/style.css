@@ -504,6 +504,18 @@ tr.ds-table-row.metadata-deletion {
 	background-color: #CCCCCC;
 }
 
+tr.ds-table-row.item-delete {
+	background-color: #CC99FF;
+}
+
+tr.ds-table-row.item-withdraw {
+	background-color: #CC99FF;
+}
+
+tr.ds-table-row.item-reinstate {
+	background-color: #CC99FF;
+}
+
 tr.ds-table-row.metadata-addition td,tr.ds-table-row.metadata-deletion td {
 	border-top: 1px solid black;
 }
@@ -549,6 +561,12 @@ span.italics,span.italic {
 
 span.underline {
         text-decoration: underline;
+}
+
+span.floatleft {
+	border:none;
+	float:right;
+	display:inline;
 }
 
 div.ds-static-div {
@@ -931,6 +949,21 @@ div#ds-options li {
         background-color: inherit;
 }
 
+div#ds-feed-option li
+{
+    padding-top: 7px;
+}
+
+div#ds-feed-option a
+{
+    padding: 0px 0px 2px 20px;
+}
+
+div#ds-feed-option ul
+{
+    list-style-type:none;
+}
+
 input.ds-password-field {
         margin-right: 5px;
 }
@@ -1213,3 +1246,84 @@ span.Z3988 {
 	display: none;
 }
 
+
+form.discover-search-box div.ds-form-content,
+form.discover-sort-box div.ds-form-content
+{
+    width: auto;
+}
+
+form.discover-search-box div.ds-form-content input.update-filters{
+    margin-left: 145px;
+}
+
+form.discover-sort-box select{
+    margin: 0 4px;
+}
+
+
+.hidden {
+    display:none;
+    visibility:hidden;
+}
+
+.icon-button{
+    padding:4px;
+    cursor: pointer;
+    margin: 2px;
+    background-color: #E6E6E6;
+    border: 1px solid #D3D3D3;
+    text-indent: -1000px;
+    width: 30px;
+    height: 30px;
+    display:block;
+    /*Required for IE*/
+    font-size: 0;
+    line-height: 0;
+}
+
+.icon-button.ds-button-field[disabled="disabled"],
+.icon-button.ds-button-field[disabled=""],
+.icon-button.ds-button-field.disabled {
+    opacity: 0.35
+}
+
+
+.icon-button.arrowUp{
+    background-image: url(../images/arrow_up_444444_16x16.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.icon-button.arrowDown{
+    background-image: url(../images/arrow_down_444444_16x16.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+/* FOR CC PAGE to GROUP ITEMS horizontally */
+ul.horizontal li span.bold a { color: black; }
+
+/* group items horizontally in a list */
+
+ul.horizontalVanilla
+{
+font-weight: bold;
+list-style-type: none;
+padding: 0px;
+padding-left: 0px;
+padding-bottom: 15px;
+border-left: 1px solid white;
+border-right: 1px solid white;
+margin: 10px -1px 5px -1px;
+width: inherit;
+}
+
+ul.horizontalVanilla li
+{
+float: left;
+height: 100%;
+background-color: rgb(255, 255, 255);
+margin: 2px 2px 0px 2px;
+/* border: 1px solid rgb(240, 240, 210); */
+}

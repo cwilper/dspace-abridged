@@ -17,8 +17,7 @@ AjaxSolr.AutocompleteWidget = AjaxSolr.AbstractFacetWidget.extend({
 
     var callback = function (response) {
       var list = [];
-      for (var i = 0; i < self.fields.length; i++) {
-        var field = self.fields[i];
+      for (var field in response.facet_counts.facet_fields) {
         for (var facet in response.facet_counts.facet_fields[field]) {
           list.push({
             field: field,
@@ -57,6 +56,13 @@ AjaxSolr.AutocompleteWidget = AjaxSolr.AbstractFacetWidget.extend({
     for(var j = 0; j < fqs.length; j ++){
         params.push('fq=' + $(fqs[j]).val());
     }
+    //Attempt to add our scope !
+    var scope = $("input[name='discovery-json-scope']").val();
+    if(scope != undefined){
+        params.push("scope=" + scope);
+    }
+
+
     
 
 

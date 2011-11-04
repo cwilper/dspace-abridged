@@ -59,6 +59,8 @@ public class StatisticsClient
         options.addOption("f", "delete-spiders-by-flag", false, "Delete Spiders in Solr By isBot Flag");
         options.addOption("i", "delete-spiders-by-ip", false, "Delete Spiders in Solr By IP Address");
         options.addOption("o", "optimize", false, "Run maintenance on the SOLR index");
+        options.addOption("b", "reindex-bitstreams", false, "Reindex the bitstreams to ensure we have the bundle name");
+        options.addOption("r", "remove-deleted-bitstreams", false, "While indexing the bundle names remove the statistics about deleted bitstreams");
         options.addOption("h", "help", false, "help");
 
 		CommandLine line = parser.parse(options, args);
@@ -89,6 +91,10 @@ public class StatisticsClient
         {
             SolrLogger.optimizeSOLR();
         }
+        else if(line.hasOption('b'))
+        {
+            SolrLogger.reindexBitstreamHits(line.hasOption('r'));
+        }
         else
         {
             printHelp(options, 0);
@@ -105,7 +111,7 @@ public class StatisticsClient
             System.out.println("Downloading latest spider IP addresses:");
 
             // Get the list URLs to download from
-            String urls = ConfigurationManager.getProperty("solr.spiderips.urls");
+            String urls = ConfigurationManager.getProperty("solr-statistics", "spiderips.urls");
             if ((urls == null) || ("".equals(urls)))
             {
                 System.err.println(" - Missing setting from dspace.cfg: solr.spiderips.urls");

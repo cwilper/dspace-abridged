@@ -266,8 +266,8 @@
             <xsl:variable name="page_title" select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='title']" />
             <title>
                 <xsl:choose>
-                        <xsl:when test="not($page_title)">
-                                <xsl:text>  </xsl:text>
+                        <xsl:when test="not($page_title) or (string-length($page_title) &lt; 1)">
+                                <i18n:text>xmlui.dri2xhtml.METS-1.0.no-title</i18n:text>
                         </xsl:when>
                         <xsl:otherwise>
                                 <xsl:copy-of select="$page_title/node()" />
@@ -303,9 +303,9 @@
             </a>
             <h1 class="pagetitle">
                 <xsl:choose>
-                        <!-- protectiotion against an empty page title -->
-                        <xsl:when test="not(/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='title'])">
-                                <xsl:text> </xsl:text>
+                        <!-- protection against an empty page title -->
+                        <xsl:when test="not(/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='title']) or (string-length(/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='title']) &lt; 1)">
+                                <i18n:text>xmlui.dri2xhtml.METS-1.0.no-title</i18n:text>
                         </xsl:when>
                         <xsl:otherwise>
                                 <xsl:copy-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='title']/node()"/>
@@ -373,7 +373,68 @@
         </div>
     </xsl:template>
     
-    
+    <xsl:template name="cc-license">
+        <xsl:param name="metadataURL"/>
+        <xsl:variable name="externalMetadataURL">
+            <xsl:text>cocoon:/</xsl:text>
+            <xsl:value-of select="$metadataURL"/>
+            <xsl:text>?sections=dmdSec,fileSec&amp;fileGrpTypes=THUMBNAIL</xsl:text>
+        </xsl:variable>
+
+        <xsl:variable name="ccLicenseName"
+                      select="document($externalMetadataURL)//dim:field[@element='rights']"
+                      />
+        <xsl:variable name="ccLicenseUri"
+                      select="document($externalMetadataURL)//dim:field[@element='rights'][@qualifier='uri']"
+                      />
+        <xsl:variable name="handleUri">
+                    <xsl:for-each select="document($externalMetadataURL)//dim:field[@element='identifier' and @qualifier='uri']">
+                        <a>
+                            <xsl:attribute name="href">
+                                <xsl:copy-of select="./node()"/>
+                            </xsl:attribute>
+                            <xsl:copy-of select="./node()"/>
+                        </a>
+                        <xsl:if test="count(following-sibling::dim:field[@element='identifier' and @qualifier='uri']) != 0">
+                            <xsl:text>, </xsl:text>
+                        </xsl:if>
+                </xsl:for-each>
+        </xsl:variable>
+
+     <xsl:if test="$ccLicenseName and $ccLicenseUri and contains($ccLicenseUri, 'creativecommons')">
+        <div about="{$handleUri}">
+            <xsl:attribute name="style">
+                <xsl:text>margin:0em 2em 0em 2em; padding-bottom:0em;</xsl:text>
+            </xsl:attribute>
+            <a rel="license"
+                href="{$ccLicenseUri}"
+                alt="{$ccLicenseName}"
+                title="{$ccLicenseName}"
+                >
+                <img>
+                     <xsl:attribute name="src">
+                        <xsl:value-of select="concat($theme-path,'/images/cc-ship.gif')"/>
+                     </xsl:attribute>
+                     <xsl:attribute name="alt">
+                         <xsl:value-of select="$ccLicenseName"/>
+                     </xsl:attribute>
+                     <xsl:attribute name="style">
+                         <xsl:text>float:left; margin:0em 1em 0em 0em; border:none;</xsl:text>
+                     </xsl:attribute>
+                </img>
+            </a>
+            <span>
+                <xsl:attribute name="style">
+                    <xsl:text>vertical-align:middle; text-indent:0 !important;</xsl:text>
+                </xsl:attribute>
+                <i18n:text>xmlui.dri2xhtml.METS-1.0.cc-license-text</i18n:text>
+                <xsl:value-of select="$ccLicenseName"/>
+            </span>
+        </div>
+        </xsl:if>
+    </xsl:template>
+
+
     <!-- Like the header, the footer contains various miscellanious text, links, and image placeholders -->
     <xsl:template name="buildFooter">
         <div id="ds-footer">
@@ -504,6 +565,7 @@
                     from under pageMeta. -->
                 <form id="ds-search-form" method="post">
                     <xsl:attribute name="action">
+                        <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='contextPath']"/>
                         <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='simpleURL']"/>
                     </xsl:attribute>
                     <fieldset>
@@ -556,17 +618,33 @@
                         </xsl:if>
                     </fieldset>
                 </form>
-                <!-- The "Advanced search" link, to be perched underneath the search box -->
-                <a>
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL']"/>
-                    </xsl:attribute>
-                    <i18n:text>xmlui.dri2xhtml.structural.search-advanced</i18n:text>
-                </a>
+                <!--Only add if the advanced search url is different from the simple search-->
+                <xsl:if test="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL'] != /dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='simpleURL']">
+                    <!-- The "Advanced search" link, to be perched underneath the search box -->
+                    <a>
+                        <xsl:attribute name="href">
+                            <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL']"/>
+                        </xsl:attribute>
+                        <i18n:text>xmlui.dri2xhtml.structural.search-advanced</i18n:text>
+                    </a>
+                </xsl:if>
             </div>
             
             <!-- Once the search box is built, the other parts of the options are added -->
             <xsl:apply-templates />
+
+            <!-- DS-984 Add RSS Links to Options Box -->
+            <xsl:if test="count(/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='feed']) != 0">
+                <h3 id="ds-feed-option-head" class="ds-option-set-head">
+                    <i18n:text>xmlui.feed.header</i18n:text>
+                </h3>
+                <div id="ds-feed-option" class="ds-option-set">
+                    <ul>
+                        <xsl:call-template name="addRSSLinks"/>
+                    </ul>
+                </div>
+            </xsl:if>
+
         </div>
     </xsl:template>
     
@@ -630,6 +708,17 @@
                         </xsl:otherwise>
                 </xsl:choose>
         </div>
+        <xsl:variable name="itemDivision">
+                        <xsl:value-of select="@n"/>
+                </xsl:variable>
+                <xsl:variable name="xrefTarget">
+                        <xsl:value-of select="./dri:p/dri:xref/@target"/>
+                </xsl:variable>
+                <xsl:if test="$itemDivision='item-view'">
+                    <xsl:call-template name="cc-license">
+                        <xsl:with-param name="metadataURL" select="./dri:referenceSet/dri:reference/@url"/>
+                    </xsl:call-template>
+                </xsl:if>
         <xsl:apply-templates select="@pagination">
             <xsl:with-param name="position">bottom</xsl:with-param>
         </xsl:apply-templates>
@@ -1465,7 +1554,15 @@
             <xsl:call-template name="standardAttributes">
                 <xsl:with-param name="class">ds-div-head</xsl:with-param>
             </xsl:call-template>
-            <xsl:apply-templates />
+
+            <xsl:choose>
+                <xsl:when test="string-length(./node()) &lt; 1">
+                    <i18n:text>xmlui.dri2xhtml.METS-1.0.no-title</i18n:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates />
+                </xsl:otherwise>
+            </xsl:choose>
         </xsl:element>
     </xsl:template>
     
@@ -1564,9 +1661,16 @@
         <xsl:if test="@target">
             <a>
                 <xsl:attribute name="href"><xsl:value-of select="@target"/></xsl:attribute>
+                <xsl:if test="@title">
+                	<xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="@rend">
+                	<xsl:attribute name="class"><xsl:value-of select="@rend"/></xsl:attribute>
+                </xsl:if>
                 <img>
                     <xsl:attribute name="src"><xsl:value-of select="@source"/></xsl:attribute>
                     <xsl:attribute name="alt"><xsl:apply-templates /></xsl:attribute>
+                <xsl:attribute name="border"><xsl:text>none</xsl:text></xsl:attribute>
                 </img>
             </a>
         </xsl:if>
@@ -1577,8 +1681,6 @@
             </img>
         </xsl:if>
     </xsl:template>
-    
-    
     
     
     
@@ -2577,7 +2679,15 @@
     <xsl:template match="@size">
         <xsl:attribute name="size"><xsl:value-of select="."/></xsl:attribute>
     </xsl:template>
-    
+
+     <!-- used by select element -->
+    <xsl:template match="@evtbehavior">
+        <xsl:param name="behavior" select="."/>
+        <xsl:if test="normalize-space($behavior)='submitOnChange'">
+            <xsl:attribute name="onchange">this.form.submit();</xsl:attribute>
+                </xsl:if>
+    </xsl:template>
+
     <xsl:template match="@maxlength">
         <xsl:attribute name="maxlength"><xsl:value-of select="."/></xsl:attribute>
     </xsl:template>
@@ -3257,6 +3367,67 @@
                 </xsl:for-each>
             </div>
         </xsl:for-each>
+    </xsl:template>
+
+
+
+    <!-- Add each RSS feed from meta to a list -->
+    <xsl:template name="addRSSLinks">
+        <xsl:for-each select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='feed']">
+            <li>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="."/>
+                    </xsl:attribute>
+
+                     <xsl:attribute name="style">
+                        <xsl:text>background: url(</xsl:text>
+                        <xsl:value-of select="$context-path"/>
+                        <xsl:text>/static/icons/feed.png) no-repeat</xsl:text>
+                    </xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="contains(., 'rss_1.0')">
+                            <xsl:text>RSS 1.0</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(., 'rss_2.0')">
+                            <xsl:text>RSS 2.0</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(., 'atom_1.0')">
+                            <xsl:text>Atom</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@qualifier"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>
+            </li>
+        </xsl:for-each>
+    </xsl:template>
+
+    <!--Template for the bitstream reordering-->
+    <xsl:template match="dri:cell[starts-with(@id, 'aspect.administrative.item.EditItemBitstreamsForm.cell.bitstream_order_')]" priority="2">
+        <td>
+            <xsl:call-template name="standardAttributes"/>
+            <xsl:apply-templates select="*[not(@type='button')]" />
+            <!--A div that will indicate the old & the new order-->
+            <div>
+                <span>
+                    <!--Give this one an ID so that the javascript can change his value-->
+                    <xsl:attribute name="id">
+                        <xsl:value-of select="dri:field/@id"/>
+                        <xsl:text>_new</xsl:text>
+                    </xsl:attribute>
+                    <xsl:value-of select="dri:field/dri:value"/>
+                </span>
+                <xsl:text> (</xsl:text>
+                <i18n:text>xmlui.administrative.item.EditItemBitstreamsForm.previous_order</i18n:text>
+                <xsl:value-of select="dri:field/dri:value"/>
+                <xsl:text>)</xsl:text>
+            </div>
+        </td>
+        <td>
+            <xsl:apply-templates select="dri:field[@type='button']"/>
+        </td>
     </xsl:template>
 
 </xsl:stylesheet>

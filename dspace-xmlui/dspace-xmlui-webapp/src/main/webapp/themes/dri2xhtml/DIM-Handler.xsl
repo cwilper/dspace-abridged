@@ -96,15 +96,7 @@
         <xsl:variable name="itemWithdrawn" select="@withdrawn" />
 
         <div class="artifact-description">
-		    <!-- Generate COinS with empty content per spec but force Cocoon to not create a minified tag  -->
-            <span class="Z3988">
-                <xsl:attribute name="title">
-                    <xsl:call-template name="renderCOinS"/>
-                </xsl:attribute>
-               &#xFEFF; <!-- non-breaking space to force separating the end tag --> 
-            </span>
-
-            <div class="artifact-title">
+		   <div class="artifact-title">
                 <xsl:element name="a">
                     <xsl:attribute name="href">
                         <xsl:choose>
@@ -117,15 +109,22 @@
                         </xsl:choose>
                     </xsl:attribute>
                     <xsl:choose>
-                        <xsl:when test="dim:field[@element='title']">
-                            <xsl:value-of select="dim:field[@element='title'][1]/node()"/>
+                        <xsl:when test="dim:field[@mdschema='dc' and @element='title'] and (string-length(dim:field[@element='title']) &gt; 0)">
+                            <xsl:value-of select="dim:field[@mdschema='dc' and @element='title'][1]/node()"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <i18n:text>xmlui.dri2xhtml.METS-1.0.no-title</i18n:text>
                         </xsl:otherwise>
                     </xsl:choose>
-                </xsl:element>    
-            </div>
+                </xsl:element>
+               <!-- Generate COinS with empty content per spec but force Cocoon to not create a minified tag  -->
+               <span class="Z3988">
+                   <xsl:attribute name="title">
+                       <xsl:call-template name="renderCOinS"/>
+                   </xsl:attribute>
+                   &#xFEFF; <!-- non-breaking space to force separating the end tag -->
+               </span>
+           </div>
             <div class="artifact-info">
                 <span class="author">
                     <xsl:choose>
@@ -410,6 +409,10 @@
     
     <!-- Generate the info about the item from the metadata section -->
     <xsl:template match="dim:dim" mode="itemSummaryView-DIM">
+        <table class="ds-includeSet-table">
+         <xsl:call-template name="itemSummaryView-DIM-fields">
+         </xsl:call-template>
+        </table>
         <!--  Generate COinS  -->
         <span class="Z3988">
             <xsl:attribute name="title">
@@ -417,10 +420,6 @@
             </xsl:attribute>
 	    &#xFEFF; <!-- non-breaking space to force separating the end tag -->
         </span>
-        <table class="ds-includeSet-table">
-         <xsl:call-template name="itemSummaryView-DIM-fields">
-         </xsl:call-template>
-        </table>
     </xsl:template>
 
     <!-- render each field on a row, alternating phase between odd and even -->
@@ -732,18 +731,19 @@
     
     <!-- The block of templates used to render the complete DIM contents of a DRI object -->
     <xsl:template match="dim:dim" mode="itemDetailView-DIM">
+     	<table class="ds-includeSet-table">
+		    <xsl:apply-templates mode="itemDetailView-DIM"/>
+		</table>
         <span class="Z3988">
             <xsl:attribute name="title">
                  <xsl:call-template name="renderCOinS"/>
             </xsl:attribute>
             &#xFEFF; <!-- non-breaking space to force separating the end tag -->
-        </span>                
-		<table class="ds-includeSet-table">
-		    <xsl:apply-templates mode="itemDetailView-DIM"/>
-		</table>
+        </span>
     </xsl:template>
             
     <xsl:template match="dim:field" mode="itemDetailView-DIM">
+        <xsl:if test="not(@element='description' and @qualifier='provenance')">
             <tr>
                 <xsl:attribute name="class">
                     <xsl:text>ds-table-row </xsl:text>
@@ -769,6 +769,7 @@
             </td>
                 <td><xsl:value-of select="./@language"/></td>
             </tr>
+        </xsl:if>
     </xsl:template>
 
 	
@@ -802,7 +803,7 @@
         	</div>
         </xsl:if>
         
-        <xsl:if test="string-length(dim:field[@element='rights'][not(@qualifier)])&gt;0">
+        <xsl:if test="string-length(dim:field[@element='rights'][not(@qualifier)])&gt;0 or string-length(dim:field[@element='rights'][@qualifier='license'])&gt;0">
         	<div class="detail-view-rights-and-license">
 		        <xsl:if test="string-length(dim:field[@element='rights'][not(@qualifier)])&gt;0">
 		            <p class="copyright-text">

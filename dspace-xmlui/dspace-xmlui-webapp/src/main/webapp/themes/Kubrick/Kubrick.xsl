@@ -157,6 +157,7 @@
                     from under pageMeta. -->
                 <form id="ds-search-form" method="post">
                     <xsl:attribute name="action">
+                        <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='contextPath']"/>
                         <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='simpleURL']"/>
                     </xsl:attribute>
                     <fieldset>
@@ -644,21 +645,6 @@
             mode="itemMetadataPopup-DIM"/>
         <!-- Generate the thunbnail, if present, from the file section -->
         <!-- <xsl:apply-templates select="./mets:fileSec/mets:fileGrp[@USE='THUMBNAIL']" mode="itemMetadataPopup-DIM"/> -->
-    </xsl:template>
-    
-    
-    <!-- Generate the thunbnail, if present, from the file section -->
-    <xsl:template match="mets:fileGrp[@USE='THUMBNAIL']" mode="itemMetadataPopup-DIM">
-        <div class="popup-artifact-preview">
-            <!-- manakin-voss version: <a href="{ancestor::mets:METS/@OBJID}"> -->
-            <a href="{ancestor::dri:object/@url}"> 
-                <img alt="Thumbnail">
-                    <xsl:attribute name="src">
-                        <xsl:value-of select="mets:file/mets:FLocat[@LOCTYPE='URL']/@xlink:href" />
-                    </xsl:attribute>
-                </img>
-            </a>
-        </div>
     </xsl:template>
     
     

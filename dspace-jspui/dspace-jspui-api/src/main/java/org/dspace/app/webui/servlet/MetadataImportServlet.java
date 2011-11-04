@@ -45,7 +45,7 @@ public class MetadataImportServlet extends DSpaceServlet
     public void init()
     {
         // Set the lmimt to the number of items that may be changed in one go, default to 20
-        limit = ConfigurationManager.getIntProperty("bulkedit.gui-item-limit", 20);
+        limit = ConfigurationManager.getIntProperty("bulkedit", "gui-item-limit", 20);
         log.debug("Setting bulk edit limit to " + limit + " items");
     }
 
@@ -126,7 +126,7 @@ public class MetadataImportServlet extends DSpaceServlet
             // Make the changes
             try
             {
-                MetadataImport mImport = new MetadataImport(context, csv.getCSVLines());
+                MetadataImport mImport = new MetadataImport(context, csv);
                 List<BulkEditChange> changes = mImport.runImport(true, false, false, false);
 
                 // Commit the changes
@@ -204,7 +204,7 @@ public class MetadataImportServlet extends DSpaceServlet
 
         // Run the import
         DSpaceCSV csv = new DSpaceCSV(f, context);
-        MetadataImport mImport = new MetadataImport(context, csv.getCSVLines());
+        MetadataImport mImport = new MetadataImport(context, csv);
         List<BulkEditChange> changes = mImport.runImport(false, false, false, false);
 
         // Store the csv lines in the session

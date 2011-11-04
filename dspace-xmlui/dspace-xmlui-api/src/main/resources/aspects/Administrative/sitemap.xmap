@@ -1,42 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  sitemap.xmap
 
-  Version: $Revision$
- 
-  Date: $Date$
- 
-  Copyright (c) 2002-2005, Hewlett-Packard Company and Massachusetts
-  Institute of Technology.  All rights reserved.
- 
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are
-  met:
- 
-  - Redistributions of source code must retain the above copyright
-  notice, this list of conditions and the following disclaimer.
- 
-  - Redistributions in binary form must reproduce the above copyright
-  notice, this list of conditions and the following disclaimer in the
-  documentation and/or other materials provided with the distribution.
- 
-  - Neither the name of the Hewlett-Packard Company nor the name of the
-  Massachusetts Institute of Technology nor the names of their
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
- 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
-  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
-  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-  DAMAGE.
+    The contents of this file are subject to the license and copyright
+    detailed in the LICENSE and NOTICE files at the root of the source
+    tree and available online at
+
+    http://www.dspace.org/license/
+
 -->
 
 <!-- 
@@ -117,8 +87,9 @@ to administer DSpace.
 			<map:transformer name="Navigation" src="org.dspace.app.xmlui.aspect.administrative.Navigation"/>
 			<map:transformer name="SystemwideAlerts" src="org.dspace.app.xmlui.aspect.administrative.SystemwideAlerts"/>
 			<map:transformer name="ControlPanel" src="org.dspace.app.xmlui.aspect.administrative.ControlPanel" />
-            <map:transformer name="WithdrawnItems" src="org.dspace.app.xmlui.aspect.administrative.WithdrawnItems" />
-            <map:transformer name="ItemExport" src="org.dspace.app.xmlui.aspect.administrative.ItemExport"/>
+                        <map:transformer name="WithdrawnItems" src="org.dspace.app.xmlui.aspect.administrative.WithdrawnItems" />
+                        <map:transformer name="ItemExport" src="org.dspace.app.xmlui.aspect.administrative.ItemExport"/>
+                        <map:transformer name="CurateForm" src="org.dspace.app.xmlui.aspect.administrative.CurateForm"/>
                         <map:transformer name="ChoiceLookup" src="org.dspace.app.xmlui.aspect.general.ChoiceLookupTransformer"/>
 		</map:transformers>
 		
@@ -131,6 +102,7 @@ to administer DSpace.
     	<map:actions>
     		<map:action name="ControlPanelAction" src="org.dspace.app.xmlui.aspect.administrative.ControlPanelAction" />
     		<map:action name="CurrentActivityAction" src="org.dspace.app.xmlui.aspect.administrative.CurrentActivityAction" />
+                <map:action name="ClearCacheAction" src="org.apache.cocoon.acting.ClearCacheAction"/>        
     	</map:actions>		
 		
 		<map:selectors>
@@ -288,6 +260,17 @@ to administer DSpace.
 							<map:call continuation="{1}"/>
 						</map:match>
 						<map:call function="startManageAuthorizations"/>
+					</map:match>
+
+                                        <!--
+                                            This is the general entry / resume point for the 
+                                            site-wide curation tasks.
+                                        -->
+					<map:match pattern="admin/curate">
+                                            <map:match type="request" pattern="administrative-continue">
+                                                <map:call continuation="{1}"/>
+                                            </map:match>
+                                            <map:call function="startCurate"/>
 					</map:match>
 				</map:when>
 			</map:select>
@@ -539,6 +522,12 @@ to administer DSpace.
 		        		</map:match>
 		        		
 		        		<map:match pattern="admin/item/bitstreams">
+                            <!--Add the javascript-->
+                            <map:transform type="IncludePageMeta">
+                                <map:parameter name="javascript.static#1" value="loadJQuery.js"/>
+                                <map:parameter name="javascript.static#2" value="static/js/bitstream-ordering.js"/>
+                            </map:transform>
+
 		        			<map:transform type="EditItemBitstreamsForm">
 		        				<map:parameter name="itemID" value="{flow-attribute:itemID}"/>
 		        			</map:transform>
@@ -558,12 +547,13 @@ to administer DSpace.
 		        			</map:transform>
 		        		</map:match>
 
-                                        <!-- Curation options -->
+                        <!-- Curation options -->
 		        		<map:match pattern="admin/item/curateItem">
-                                            <map:transform type="CurateItemForm">
-                                                <map:parameter name="itemID" value="{flow-attribute:itemID}"/>
-                                            </map:transform>
-                                        </map:match>
+                            <map:transform type="CurateItemForm">
+                                <map:parameter name="select_curate_group" value="{flow-attribute:select_curate_group}"/>
+                                <map:parameter name="itemID" value="{flow-attribute:itemID}"/>
+                            </map:transform>
+                        </map:match>
 		        		
 		        		<!--
 		        			Upload a new bitstream
@@ -743,12 +733,13 @@ to administer DSpace.
 		        			</map:transform>
 		        		</map:match> 		
 
-                                        <!-- Curation options -->
+                        <!-- Curation options -->
 		        		<map:match pattern="admin/collection/curateCollection">
-                                            <map:transform type="CurateCollectionForm">
-                                                <map:parameter name="collectionID" value="{flow-attribute:collectionID}"/>
-                                            </map:transform>
-                                        </map:match>
+                            <map:transform type="CurateCollectionForm">
+                                <map:parameter name="select_curate_group" value="{flow-attribute:select_curate_group}"/>
+                                <map:parameter name="collectionID" value="{flow-attribute:collectionID}"/>
+                            </map:transform>
+                        </map:match>
 		        		
 		        		
 		        		
@@ -792,12 +783,13 @@ to administer DSpace.
 		        			</map:transform>
 		        		</map:match>
       		
-                                        <!-- Curation options -->
+                        <!-- Curation options -->
 		        		<map:match pattern="admin/community/curateCommunity">
-                                            <map:transform type="CurateCommunityForm">
-                                                <map:parameter name="communityID" value="{flow-attribute:communityID}"/>
-                                            </map:transform>
-                                        </map:match>
+                            <map:transform type="CurateCommunityForm">
+                                <map:parameter name="select_curate_group" value="{flow-attribute:select_curate_group}"/> 
+                                <map:parameter name="communityID" value="{flow-attribute:communityID}"/>
+                            </map:transform>
+                        </map:match>
 		        	<!-- Authorization pages -->
 		        		
 		        		
@@ -872,6 +864,16 @@ to administer DSpace.
 		        				<map:parameter name="policyIDs" value="{flow-attribute:policyIDs}"/>
 		        			</map:transform>
 		        		</map:match>
+
+                        <!-- Site-Wide Curation page -->
+		        		<map:match pattern="admin/curate/main">
+                            <map:transform type="CurateForm">
+                                <map:parameter name="select_curate_group" value="{flow-attribute:select_curate_group}"/>
+                                <map:parameter name="curate_task" value="{flow-attribute:curate_task}"/>
+                                <map:parameter name="identifier" value="{flow-attribute:identifier}"/>
+                            </map:transform>
+		        		</map:match>
+
 		        	</map:match> <!-- if flow -->
             	</map:when>
 		    	<map:otherwise>
@@ -908,27 +910,37 @@ to administer DSpace.
 		    		<map:match pattern="admin/export">
 		    			<map:act type="StartAuthentication"/>
 		    		</map:match>
+                                <map:match pattern="admin/curate">
+                                    <map:act type="StartAuthentication"/>
+		    		</map:match>
 		    		
                 </map:otherwise>
             </map:select>
             
-			<map:match pattern="admin/panel">
-				<map:select type="AuthenticatedSelector">
-					<map:when test="administrator">
-						<map:act type="ControlPanelAction">
-							<map:transform type="SystemwideAlerts"/>
-						</map:act>
-						<map:transform type="ControlPanel" />
-						<map:serialize type="xml"/>
-					</map:when>
-					
-					<map:otherwise>
-						<map:act type="StartAuthentication"/>
-					</map:otherwise>
-				</map:select>
-			</map:match>
+            <!-- Access to Control Panel (limited to Administrators) -->
+            <map:match pattern="admin/panel">
+                <map:select type="AuthenticatedSelector">
+                    <map:when test="administrator">
+                        <!--If the 'clearcache' request parameter is specified, first clear
+                            the Cocoon Cache before sending user back to control panel-->
+                        <map:match type="request" pattern="clearcache">
+                            <map:act type="ClearCacheAction"/>
+                        </map:match>    
+                        <!-- Perform any control panel actions (if specified via Control panel) -->
+                        <map:act type="ControlPanelAction">
+                            <map:transform type="SystemwideAlerts"/>
+                        </map:act>
+                        <!-- Create the Control Panel and serialize-->
+                        <map:transform type="ControlPanel" />
+                        <map:serialize type="xml"/>
+                    </map:when>
+                    <map:otherwise>
+                        <map:act type="StartAuthentication"/>
+                    </map:otherwise>
+                </map:select>
+            </map:match>
 		    
-		    <map:match pattern="admin/export">
+            <map:match pattern="admin/export">
                 <map:transform type="ItemExport"/>
             </map:match>
 		    

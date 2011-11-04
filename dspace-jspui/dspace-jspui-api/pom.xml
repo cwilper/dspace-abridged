@@ -14,7 +14,8 @@
    <parent>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-jspui</artifactId>
-      <version>1.7.2</version>
+      <version>1.8.0</version>
+      <relativePath>..</relativePath>
    </parent>
 
    <!-- 
@@ -23,9 +24,9 @@
       into the snapshot repository below.
    -->
    <scm>
-      <connection>scm:svn:http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</connection>
-      <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</developerConnection>
-      <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</url>
+      <connection>scm:svn:http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0/dspace-jspui/dspace-jspui-api</connection>
+      <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0/dspace-jspui/dspace-jspui-api</developerConnection>
+      <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0/dspace-jspui/dspace-jspui-api</url>
    </scm>
 
    <dependencies>
@@ -75,7 +76,6 @@
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-webmvc</artifactId>
-         <version>2.5.6</version>
          <type>jar</type>
       </dependency>
    </dependencies>

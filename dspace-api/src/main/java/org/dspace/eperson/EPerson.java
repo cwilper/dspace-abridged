@@ -975,6 +975,86 @@ public class EPerson extends DSpaceObject
             }
         }
 
+        if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
+            getXMLWorkflowConstraints(tableList);
+        }else{
+            getOriginalWorkflowConstraints(tableList);
+
+        }
+        // the list of tables can be used to construct an error message
+        // explaining to the user why the eperson cannot be deleted.
+        return tableList;
+    }
+
+    private void getXMLWorkflowConstraints(List<String> tableList) throws SQLException {
+         TableRowIterator tri;
+        // check for eperson in claimtask table
+        tri = DatabaseManager.queryTable(myContext, "cwf_claimtask",
+                "SELECT * from cwf_claimtask where owner_id= ? ",
+                getID());
+
+        try
+        {
+            if (tri.hasNext())
+            {
+                tableList.add("cwf_claimtask");
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+            {
+                tri.close();
+            }
+        }
+
+        // check for eperson in pooltask table
+        tri = DatabaseManager.queryTable(myContext, "cwf_pooltask",
+                "SELECT * from cwf_pooltask where eperson_id= ? ",
+                getID());
+
+        try
+        {
+            if (tri.hasNext())
+            {
+                tableList.add("cwf_pooltask");
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+            {
+                tri.close();
+            }
+        }
+
+        // check for eperson in workflowitemrole table
+        tri = DatabaseManager.queryTable(myContext, "cwf_workflowitemrole",
+                "SELECT * from cwf_workflowitemrole where eperson_id= ? ",
+                getID());
+
+        try
+        {
+            if (tri.hasNext())
+            {
+                tableList.add("cwf_workflowitemrole");
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+            {
+                tri.close();
+            }
+        }
+
+    }
+
+    private void getOriginalWorkflowConstraints(List<String> tableList) throws SQLException {
+        TableRowIterator tri;
         // check for eperson in workflowitem table
         tri = DatabaseManager.query(myContext, 
                 "SELECT * from workflowitem where owner= ? ",
@@ -1016,10 +1096,6 @@ public class EPerson extends DSpaceObject
                 tri.close();
             }
         }
-        
-        // the list of tables can be used to construct an error message
-        // explaining to the user why the eperson cannot be deleted.
-        return tableList;
     }
 
     public String getName()

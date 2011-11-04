@@ -104,16 +104,16 @@ public class JSPLicenseStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
-        // if creative commons licensing is enabled, then it is page #1
-        if (CreativeCommons.isEnabled() && LicenseStep.getCurrentPage(request) == 1)
-        {
-            showCCLicense(context, request, response, subInfo);
-        }
-        else
-        // otherwise load default DSpace license agreement
-        {
-            showLicense(context, request, response, subInfo);
-        }
+
+        String license = LicenseUtils.getLicenseText(
+                context.getCurrentLocale(), subInfo.getSubmissionItem()
+                        .getCollection(),
+                subInfo.getSubmissionItem().getItem(), subInfo
+                        .getSubmissionItem().getSubmitter());
+        request.setAttribute("license", license);
+
+        JSPStepManager.showJSP(request, response, subInfo, LICENSE_JSP);
+
     }
 
     /**
@@ -172,57 +172,7 @@ public class JSPLicenseStep extends JSPStep
 
     }
 
-    
-    /**
-     * Show the DSpace license page to the user
-     * 
-     * @param context
-     *            current DSpace context
-     * @param request
-     *            the request object
-     * @param response
-     *            the response object
-     * @param subInfo
-     *            the SubmissionInfo object
-     */
-    private void showLicense(Context context, HttpServletRequest request,
-            HttpServletResponse response, SubmissionInfo subInfo)
-            throws SQLException, ServletException, IOException
-    {
-        String license = LicenseUtils.getLicenseText(
-                context.getCurrentLocale(), subInfo.getSubmissionItem()
-                        .getCollection(),
-                subInfo.getSubmissionItem().getItem(), subInfo
-                        .getSubmissionItem().getSubmitter());
-        request.setAttribute("license", license);
 
-        JSPStepManager.showJSP(request, response, subInfo, LICENSE_JSP);
-    }
-
-    /**
-     * Show the Creative Commons license page to the user
-     * 
-     * @param context
-     *            current DSpace context
-     * @param request
-     *            the request object
-     * @param response
-     *            the response object
-     * @param subInfo
-     *            the SubmissionInfo object
-     */
-    private void showCCLicense(Context context, HttpServletRequest request,
-            HttpServletResponse response, SubmissionInfo subInfo)
-            throws SQLException, ServletException, IOException
-    {
-        // Do we already have a CC license?
-        Item item = subInfo.getSubmissionItem().getItem();
-        boolean exists = CreativeCommons.hasLicense(context, item);
-        request.setAttribute("cclicense.exists", Boolean.valueOf(exists));
-
-        JSPStepManager.showJSP(request, response, subInfo, CC_LICENSE_JSP);
-    }
-    
     /**
      * Return the URL path (e.g. /submit/review-metadata.jsp) of the JSP
      * which will review the information that was gathered in this Step.

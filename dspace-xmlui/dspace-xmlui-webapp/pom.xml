@@ -13,14 +13,15 @@
     <parent>
         <groupId>org.dspace</groupId>
         <artifactId>dspace-xmlui</artifactId>
-        <version>1.7.2</version>
+        <version>1.8.0</version>
+      <relativePath>..</relativePath>
     </parent>
 
     <scm>
-        <connection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</connection>
-        <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2
+        <connection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0</connection>
+        <developerConnection>scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0/dspace-xmlui/dspace-xmlui-webapp
         </developerConnection>
-        <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</url>
+        <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.8.0/dspace-xmlui/dspace-xmlui-webapp</url>
     </scm>
 
     <build>
@@ -48,6 +49,24 @@
                         <phase>prepare-package</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <!--Exclude license check for XMLUI files which don't need it-->
+                    <excludes>
+                        <exclude>**/META-INF/**</exclude>
+                        <exclude>**/robots.txt</exclude>
+                        <exclude>**/readme*</exclude>
+                        <exclude>**/*.LICENSE</exclude>
+                        <exclude>**/cocoon/**</exclude>
+                        <exclude>**/scriptaculous/**</exclude>
+                        <exclude>**/jquery*</exclude>
+                        <exclude>**/modernizr*</exclude>
+                        <exclude>**/DD_belated*</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -114,7 +133,7 @@
 
     </dependencies>
     <properties>
-        <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
+        <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
     </properties>
 </project>
 

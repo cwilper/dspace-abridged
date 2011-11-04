@@ -7,11 +7,6 @@
  */
 package org.dspace.app.xmlui.aspect.discovery;
 
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.dspace.core.Constants;
-import org.dspace.discovery.SearchUtils;
-import org.apache.solr.common.SolrDocument;
 import org.dspace.app.xmlui.utils.HandleUtil;
 import org.dspace.app.xmlui.wing.Message;
 import org.dspace.app.xmlui.wing.WingException;
@@ -33,91 +28,53 @@ import java.sql.SQLException;
  * @author Mark Diggory (markd at atmire dot com)
  * @author Ben Bosman (ben at atmire dot com)
  */
-public class CollectionRecentSubmissions extends AbstractFiltersTransformer {
+public class CollectionRecentSubmissions extends AbstractRecentSubmissionTransformer {
 
-    private static final Logger log = Logger.getLogger(CollectionRecentSubmissions.class);
-    
     private static final Message T_head_recent_submissions =
             message("xmlui.ArtifactBrowser.CollectionViewer.head_recent_submissions");
 
 
     /**
-     * Display a single collection
+     * Displays the recent submissions for this collection
      */
     public void addBody(Body body) throws SAXException, WingException,
             SQLException, IOException, AuthorizeException {
 
         DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
-
         // Set up the major variables
         Collection collection = (Collection) dso;
+        if(!(dso instanceof Collection))
+        {
+            return;
+        }
 
-        performSearch(collection);
 
+        getRecentlySubmittedItems(collection);
+
+        //Only attempt to render our result if we have one.
         if(queryResults == null)
         {
             return;
-        }// queryResults;
-
-        // Build the collection viewer division.
-        Division home = body.addDivision("collection-home", "primary repository collection");
-
-        Division lastSubmittedDiv = home
-                .addDivision("collection-recent-submission", "secondary recent-submission");
-
-        lastSubmittedDiv.setHead(T_head_recent_submissions);
-
-        ReferenceSet lastSubmitted = lastSubmittedDiv.addReferenceSet(
-                "collection-last-submitted", ReferenceSet.TYPE_SUMMARY_LIST,
-                null, "recent-submissions");
-
-        for (SolrDocument doc : queryResults.getResults()) {
-            lastSubmitted.addReference(
-                    SearchUtils.findDSpaceObject(context, doc));
         }
 
-    }
+        if(0 < queryResults.getDspaceObjects().size()){
+            // Build the collection viewer division.
+            Division home = body.addDivision("collection-home", "primary repository collection");
 
+            Division lastSubmittedDiv = home
+                    .addDivision("collection-recent-submission", "secondary recent-submission");
 
-    /**
-     * Get the recently submitted items for the given community or collection.
-     *
-     * @param scope The comm/collection.
-     * @return the response of the query
-     */
-    public void performSearch(DSpaceObject scope) {
-        if(queryResults != null)
-        {
-            return;
-        }// queryResults;
+            lastSubmittedDiv.setHead(T_head_recent_submissions);
 
-        queryArgs = prepareDefaultFilters(getView());
+            ReferenceSet lastSubmitted = lastSubmittedDiv.addReferenceSet(
+                    "collection-last-submitted", ReferenceSet.TYPE_SUMMARY_LIST,
+                    null, "recent-submissions");
 
-        queryArgs.setQuery("search.resourcetype:" + Constants.ITEM);
-
-        queryArgs.setRows(SearchUtils.getConfig().getInt("solr.recent-submissions.size", 5));
-
-        String sortField = SearchUtils.getConfig().getString("recent.submissions.sort-option");
-        if(sortField != null){
-            queryArgs.setSortField(
-                    sortField,
-                    SolrQuery.ORDER.desc
-            );
+            for (DSpaceObject resultObj : queryResults.getDspaceObjects()) {
+                if(resultObj != null){
+                    lastSubmitted.addReference(resultObj);
+                }
+            }
         }
-
-        queryArgs.setFilterQueries("location:l" + scope.getID());
-
-        try {
-            queryResults =  getSearchService().search(queryArgs);
-        } catch (RuntimeException e) {
-            log.error(e.getMessage(),e);
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }
-    }
-
-    public String getView()
-    {
-        return "collection";
     }
 }

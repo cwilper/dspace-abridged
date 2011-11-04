@@ -31,7 +31,7 @@
     xmlns:xalan="http://xml.apache.org/xalan"
     xmlns:encoder="xalan://java.net.URLEncoder"
     xmlns:util="org.dspace.app.xmlui.utils.XSLUtils"
-    exclude-result-prefixes="xalan encoder i18n dri mets dim  xlink xsl">
+    exclude-result-prefixes="xalan encoder i18n dri mets dim xlink xsl util">
 
     <xsl:output indent="yes"/>
 
@@ -224,7 +224,7 @@
           </xsl:when>
 
           <!-- Abstract row -->
-          <xsl:when test="$clause = 5 and (dim:field[@element='description' and @qualifier='abstract'])">
+          <xsl:when test="$clause = 5 and (dim:field[@element='description' and @qualifier='abstract' and descendant::text()])">
                     <div class="simple-item-view-description">
 	                <h3><i18n:text>xmlui.dri2xhtml.METS-1.0.item-abstract</i18n:text>:</h3>
 	                <div>
@@ -232,8 +232,15 @@
 	                	<div class="spacer">&#160;</div>
 	                </xsl:if>
 	                <xsl:for-each select="dim:field[@element='description' and @qualifier='abstract']">
-		                <xsl:copy-of select="./node()"/>
-		                <xsl:if test="count(following-sibling::dim:field[@element='description' and @qualifier='abstract']) != 0">
+                        <xsl:choose>
+                            <xsl:when test="node()">
+                                <xsl:copy-of select="node()"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:text>&#160;</xsl:text>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:if test="count(following-sibling::dim:field[@element='description' and @qualifier='abstract']) != 0">
                             <div class="spacer">&#160;</div>
 	                    </xsl:if>
 	              	</xsl:for-each>
@@ -293,18 +300,22 @@
             </xsl:if>
           </xsl:otherwise>
         </xsl:choose>
+
+         <!-- Generate the Creative Commons license information from the file section (DSpace deposit license hidden by default) -->
+        <xsl:apply-templates select="mets:fileSec/mets:fileGrp[@USE='CC-LICENSE']"/>
     </xsl:template>
 
 
     <xsl:template match="dim:dim" mode="itemDetailView-DIM">
+        <table class="ds-includeSet-table detailtable">
+		    <xsl:apply-templates mode="itemDetailView-DIM"/>
+		</table>
         <span class="Z3988">
             <xsl:attribute name="title">
                  <xsl:call-template name="renderCOinS"/>
             </xsl:attribute>
+            &#xFEFF; <!-- non-breaking space to force separating the end tag -->
         </span>
-		<table class="ds-includeSet-table detailtable">
-		    <xsl:apply-templates mode="itemDetailView-DIM"/>
-		</table>
     </xsl:template>
 
     <xsl:template match="dim:field" mode="itemDetailView-DIM">
@@ -360,8 +371,9 @@
                 <!-- Otherwise, iterate over and display all of them -->
                 <xsl:otherwise>
                     <xsl:apply-templates select="mets:file">
-                     	<xsl:sort data-type="number" select="boolean(./@ID=$primaryBitstream)" order="descending" />
-                        <xsl:sort select="mets:FLocat[@LOCTYPE='URL']/@xlink:title"/>
+                     	<!--Do not sort any more bitstream order can be changed-->
+                        <!--<xsl:sort data-type="number" select="boolean(./@ID=$primaryBitstream)" order="descending" />-->
+                        <!--<xsl:sort select="mets:FLocat[@LOCTYPE='URL']/@xlink:title"/>-->
                         <xsl:with-param name="context" select="$context"/>
                     </xsl:apply-templates>
                 </xsl:otherwise>

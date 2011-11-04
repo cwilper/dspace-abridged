@@ -48,6 +48,7 @@ select.multiple {
 #ds-header-wrapper {
     background-color: #1F3F5E;
     color: white;
+    min-width: 950px;
 }
 
 #ds-header-logo-link {
@@ -92,13 +93,14 @@ select.multiple {
     padding: 0;
     border-top: 1px solid #9cacba;
     border-bottom: 1px solid #9cacba;
+    min-width: 950px;
 }
 
 #ds-trail {
     list-style: none;
-    line-height: 25px;
+    line-height: 138.5%;
     margin: 0;
-    padding: 0;
+    padding: 3px 0;
 }
 
 #ds-trail li {
@@ -243,6 +245,16 @@ div.ds-option-set ul.sublist {
     padding-bottom: 0;
 }
 
+div#ds-feed-option li
+{
+    padding-top: 4px;
+}
+
+div#ds-feed-option a
+{
+    padding: 0px 0px 2px 20px;
+}
+
 #ds-search-option {
     padding: 10px;
 }
@@ -298,6 +310,13 @@ td {
     color: #FFFFFF;
     font-weight: bold;
     cursor: pointer;
+}
+
+.ds-button-field[disabled="disabled"],
+.ds-button-field.disabled,
+li.button.disabled input {
+    opacity: 0.35;
+    cursor: auto;
 }
 
 #aspect_eperson_StartRegistration_list_registration-progress li {
@@ -362,6 +381,17 @@ ul.ds-progress-list li.disabled input.ds-button-field
     border: 1px solid #D8E8EB;
     color: #444444;
     cursor: default;
+}
+
+.ie6 .disabled,
+.ie6 li.disabled input,
+.ie7 .ds-button-field.disabled,
+.ie7 li.button.disabled input,
+.ie8 .ds-button-field.disabled,
+.ie8 li.button.disabled input {
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 50);
+    zoom: 1;
+    cursor: auto;
 }
 
 
@@ -590,6 +620,21 @@ span.field-help {
     margin-top: 3px;
     margin-bottom: 30px;
     padding: 10px;
+}
+
+#aspect_submission_Submissions_div_submissions table,
+#aspect_submission_Submissions_div_submissions table tr,
+#aspect_submission_Submissions_div_submissions table td,
+#aspect_submission_Submissions_div_submissions table th {
+    background-color: #FFFFFF;
+    border: 1px solid #9CACBA;
+}
+
+#aspect_submission_Submissions_div_submissions table tr.ds-table-header-row, 
+#aspect_submission_Submissions_div_submissions table tr.ds-table-header-row th {
+    background-color: #B6C8D9;
+    border: 1px solid #9CACBA;
+    
 }
 
 .submission .ds-form-sublist li.ds-form-item {
@@ -835,6 +880,7 @@ form.search .field-help {
 #aspect_administrative_registries_FormatRegistryMain_table_bitstream-format-registry,
 #aspect_submission_Submissions_table_unfinished-submissions,
 #aspect_submission_Submissions_table_submissions-inprogress,
+#aspect_submission_Submissions_table_completed-submissions,
 table.detailtable {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -846,6 +892,7 @@ table.detailtable {
 #aspect_administrative_registries_FormatRegistryMain_table_bitstream-format-registry tr,
 #aspect_submission_Submissions_table_unfinished-submissions tr,
 #aspect_submission_Submissions_table_submissions-inprogress tr,
+#aspect_submission_Submissions_table_completed-submissions tr,
 table.detailtable tr {
     line-height: 1.6em;
     border: 1px solid #ebebeb;
@@ -856,6 +903,7 @@ table.detailtable tr {
 #aspect_administrative_registries_FormatRegistryMain_table_bitstream-format-registry tr.even,
 #aspect_submission_Submissions_table_unfinished-submissions tr.even,
 #aspect_submission_Submissions_table_submissions-inprogress tr.even,
+#aspect_submission_Submissions_table_completed-submissions tr.even,
 table.detailtable tr.even {
     background-color: #fafafa;
 }
@@ -865,6 +913,7 @@ table.detailtable tr.even {
 #aspect_administrative_registries_FormatRegistryMain_table_bitstream-format-registry td,
 #aspect_submission_Submissions_table_unfinished-submissions td,
 #aspect_submission_Submissions_table_submissions-inprogress td,
+#aspect_submission_Submissions_table_completed-submissions td,
 table.detailtable td {
     padding: 5px 10px;
     text-align: justify;
@@ -876,7 +925,8 @@ table.detailtable td {
 #aspect_administrative_registries_MetadataRegistryMain_table_metadata-registry-main-table tr.ds-table-header-row,
 #aspect_administrative_registries_FormatRegistryMain_table_bitstream-format-registry tr.ds-table-header-row,
 #aspect_submission_Submissions_table_unfinished-submissions tr.ds-table-header-row,
-#aspect_submission_Submissions_table_submissions-inprogress tr.ds-table-header-row {
+#aspect_submission_Submissions_table_submissions-inprogress tr.ds-table-header-row,
+#aspect_submission_Submissions_table_completed-submissions tr.ds-table-header-row {
     border: none;
 }
 
@@ -885,6 +935,11 @@ table.detailtable td.label-cell {
     font-weight: bold;
     text-align: left;
     width: 100px;
+}
+
+div.item-summary-view-metadata h1,
+div.item-summary-view-metadata h2 {
+    line-height: normal;
 }
 
 div.item-summary-view-metadata {
@@ -1006,4 +1061,84 @@ div.spacer{
     margin-top: 15px;
     margin-bottom: 10px;
     text-align: center;
+}
+
+form.discover-search-box{
+    margin-bottom: 10px;
+}
+
+li.search-filter-list,
+li.used-filters-list
+{
+    padding-top: 5px;
+}
+
+form.discover-sort-box select{
+    margin: 0 4px;
+}
+
+.hidden {
+    display:none;
+    visibility:hidden;
+}
+
+.icon-button{
+    padding:4px;
+    cursor: pointer;
+    margin: 2px;
+    background-color: #6D859C;
+    border: 1px solid #1F3F5E;
+    text-indent: -1000px;
+    width: 30px;
+    height: 30px;
+    display:block;
+    /*Required for IE*/
+    font-size: 0;
+    line-height: 0;
+}
+
+.icon-button.arrowUp{
+    background-image: url(../../images/arrow_up_ffffff_16x16.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.icon-button.arrowDown{
+    background-image: url(../../images/arrow_down_ffffff_16x16.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+/* FOR CC License */
+span.floatleft {
+	border:none;
+	float:right;
+	display:inline;
+}
+
+/* FOR CC PAGE to GROUP ITEMS horizontally */
+ul.horizontal li span.bold a { color: black; }
+
+/* group items horizontally in a list */
+
+ul.horizontalVanilla
+{
+font-weight: bold;
+list-style-type: none;
+padding: 0px;
+padding-left: 0px;
+padding-bottom: 15px;
+border-left: 1px solid white;
+border-right: 1px solid white;
+margin: 10px -1px 5px -1px;
+width: inherit;
+}
+
+ul.horizontalVanilla li
+{
+float: left;
+height: 100%;
+background-color: rgb(255, 255, 255);
+margin: 2px 2px 0px 2px;
+/* border: 1px solid rgb(240, 240, 210); */
 }

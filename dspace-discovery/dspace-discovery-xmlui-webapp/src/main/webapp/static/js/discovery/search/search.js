@@ -11,7 +11,7 @@ var defaultFacets = new Array();
 
 (function ($) {
     $(function () {
-        var searchUrl = $("input[name='solr-search-url']").val();
+        var searchUrl = $("input[name='discovery-json-search-url']").val();
         Manager = new AjaxSolr.Manager({
             solrUrl: searchUrl
         });
@@ -27,8 +27,8 @@ var defaultFacets = new Array();
             defaultFacets[index - 1] = filterOptions[index].value;
         }
         */
-        //As a default facet we use everything
-        defaultFacets[0] = 'all_ac';
+        //As a default facet we use the selected value
+        defaultFacets[0] = filterSelect.find('option:selected').val();
         
         var widget = Manager.addWidget(new AjaxSolr.AutocompleteWidget({
             id: 'text',
@@ -63,6 +63,13 @@ var defaultFacets = new Array();
         for (var name in params) {
             Manager.store.addByValue(name, params[name]);
         }
+
+        //Attempt to add our scope !
+        var scope = $("input[name='discovery-json-scope']").val();
+        if(scope != undefined){
+            Manager.store.addByValue("scope", scope);
+        }
+
         Manager.doRequest();
 
         filterSelect.change(function() {
@@ -82,9 +89,9 @@ var defaultFacets = new Array();
             if($(this).val() != '*'){
                 var facetVal = $(this).val();
                 //Only facet on autocomplete fields
-                if(!facetVal.match(/.year$/)){
-                    facetVal += '_ac';
-                }
+//                if(!facetVal.match(/.year$/)){
+//                    facetVal += '_ac';
+//                }
                 facetFields = [facetVal];
             } else {
                 facetFields = defaultFacets;
@@ -114,7 +121,12 @@ var defaultFacets = new Array();
             for (var name in params) {
                 Manager.store.addByValue(name, params[name]);
             }
-            
+
+            //Attempt to add our scope !
+            var scope = $("input[name='discovery-json-scope']").val();
+            if(scope != undefined){
+                Manager.store.addByValue("scope", scope);
+            }
             Manager.doRequest();
         });
     });

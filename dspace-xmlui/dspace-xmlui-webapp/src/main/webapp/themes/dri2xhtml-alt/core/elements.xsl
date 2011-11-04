@@ -62,6 +62,17 @@
                         </xsl:otherwise>
                 </xsl:choose>
         </div>
+        <xsl:variable name="itemDivision">
+                        <xsl:value-of select="@n"/>
+                </xsl:variable>
+                <xsl:variable name="xrefTarget">
+                        <xsl:value-of select="./dri:p/dri:xref/@target"/>
+                </xsl:variable>
+                <xsl:if test="$itemDivision='item-view'">
+                    <xsl:call-template name="cc-license">
+                        <xsl:with-param name="metadataURL" select="./dri:referenceSet/dri:reference/@url"/>
+                    </xsl:call-template>
+                </xsl:if>
         <xsl:apply-templates select="@pagination">
             <xsl:with-param name="position">bottom</xsl:with-param>
         </xsl:apply-templates>
@@ -637,10 +648,17 @@
         <xsl:if test="@target">
             <a>
                 <xsl:attribute name="href"><xsl:value-of select="@target"/></xsl:attribute>
+                <xsl:if test="@title">
+                	<xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="@rend">
+                	<xsl:attribute name="class"><xsl:value-of select="@rend"/></xsl:attribute>
+                </xsl:if>
                 <img>
                     <xsl:attribute name="src"><xsl:value-of select="@source"/></xsl:attribute>
                     <xsl:attribute name="alt"><xsl:apply-templates /></xsl:attribute>
                 </img>
+                <xsl:attribute name="border"><xsl:text>none</xsl:text></xsl:attribute>
             </a>
         </xsl:if>
         <xsl:if test="not(@target)">

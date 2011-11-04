@@ -52,6 +52,7 @@
                  from under pageMeta. -->
                     <form id="ds-search-form" method="post">
                         <xsl:attribute name="action">
+                            <xsl:value-of select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='contextPath']"/>
                             <xsl:value-of
                                     select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='simpleURL']"/>
                         </xsl:attribute>
@@ -111,20 +112,71 @@
                             </xsl:if>
                         </fieldset>
                     </form>
-                    <!-- The "Advanced search" link, to be perched underneath the search box -->
-                    <a>
-                        <xsl:attribute name="href">
-                            <xsl:value-of
-                                    select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL']"/>
-                        </xsl:attribute>
-                        <i18n:text>xmlui.dri2xhtml.structural.search-advanced</i18n:text>
-                    </a>
+                    <!--Only add if the advanced search url is different from the simple search-->
+                    <xsl:if test="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL'] != /dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='simpleURL']">
+                        <!-- The "Advanced search" link, to be perched underneath the search box -->
+                        <a>
+                            <xsl:attribute name="href">
+                                <xsl:value-of
+                                        select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='search'][@qualifier='advancedURL']"/>
+                            </xsl:attribute>
+                            <i18n:text>xmlui.dri2xhtml.structural.search-advanced</i18n:text>
+                        </a>
+                    </xsl:if>
                 </div>
 
                 <!-- Once the search box is built, the other parts of the options are added -->
                 <xsl:apply-templates/>
+
+                <!-- DS-984 Add RSS Links to Options Box -->
+                <xsl:if test="count(/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='feed']) != 0">
+                    <h1 id="ds-feed-option-head" class="ds-option-set-head">
+                        <i18n:text>xmlui.feed.header</i18n:text>
+                    </h1>
+                    <div id="ds-feed-option" class="ds-option-set">
+                        <ul>
+                            <xsl:call-template name="addRSSLinks"/>
+                        </ul>
+                    </div>
+                </xsl:if>
+
+
             </div>
         </div>
+    </xsl:template>
+
+    <!-- Add each RSS feed from meta to a list -->
+    <xsl:template name="addRSSLinks">
+        <xsl:for-each select="/dri:document/dri:meta/dri:pageMeta/dri:metadata[@element='feed']">
+            <li>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="."/>
+                    </xsl:attribute>
+
+                    <xsl:attribute name="style">
+                        <xsl:text>background: url(</xsl:text>
+                        <xsl:value-of select="$context-path"/>
+                        <xsl:text>/static/icons/feed.png) no-repeat</xsl:text>
+                    </xsl:attribute>
+
+                    <xsl:choose>
+                        <xsl:when test="contains(., 'rss_1.0')">
+                            <xsl:text>RSS 1.0</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(., 'rss_2.0')">
+                            <xsl:text>RSS 2.0</xsl:text>
+                        </xsl:when>
+                        <xsl:when test="contains(., 'atom_1.0')">
+                            <xsl:text>Atom</xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@qualifier"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </a>
+            </li>
+        </xsl:for-each>
     </xsl:template>
 
     <!--give nested navigation list the class sublist-->

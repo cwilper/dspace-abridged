@@ -60,7 +60,7 @@ public class SWORDMETSIngester implements SWORDIngester
 			File depositFile = deposit.getFile();
 
 			// load the plugin manager for the required configuration
-			String cfg = ConfigurationManager.getProperty("sword.mets-ingester.package-ingester");
+			String cfg = ConfigurationManager.getProperty("sword-server", "mets-ingester.package-ingester");
 			if (cfg == null || "".equals(cfg))
 			{
 				cfg = "METS";  // default to METS
@@ -76,8 +76,18 @@ public class SWORDMETSIngester implements SWORDIngester
 			
 			// Initialize parameters to packager
 			PackageParameters params = new PackageParameters();
-                        // Force package ingester to respect Collection workflows
-                        params.setWorkflowEnabled(true);
+
+            // Force package ingester to respect Collection workflows
+            params.setWorkflowEnabled(true);
+
+            // Should restore mode be enabled, i.e. keep existing handle?
+            if (ConfigurationManager.getBooleanProperty("sword-server", "restore-mode.enable",false))
+            {
+                params.setRestoreModeEnabled(true);
+            }
+
+            // Whether or not to use the collection template
+            params.setUseCollectionTemplate(ConfigurationManager.getBooleanProperty("mets.default.ingest.useCollectionTemplate", false));
 			
 			// ingest the item from the temp file
 			DSpaceObject ingestedObject = pi.ingest(context, collection, depositFile, params, licence);
@@ -163,7 +173,7 @@ public class SWORDMETSIngester implements SWORDIngester
 	private void setUpdatedDate(Item item)
 		throws DSpaceSWORDException
 	{
-		String field = ConfigurationManager.getProperty("sword.updated.field");
+		String field = ConfigurationManager.getProperty("sword-server", "updated.field");
 		if (field == null || "".equals(field))
 		{
 			throw new DSpaceSWORDException("No configuration, or configuration is invalid for: sword.updated.field");
@@ -196,7 +206,7 @@ public class SWORDMETSIngester implements SWORDIngester
 			return;
 		}
 		
-		String field = ConfigurationManager.getProperty("sword.slug.field");
+		String field = ConfigurationManager.getProperty("sword-server", "slug.field");
 		if (field == null || "".equals(field))
 		{
 			throw new DSpaceSWORDException("No configuration, or configuration is invalid for: sword.slug.field");

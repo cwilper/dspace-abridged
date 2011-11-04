@@ -17,6 +17,10 @@ importClass(Packages.org.dspace.content.Community);
 importClass(Packages.org.dspace.harvest.HarvestedCollection);
 importClass(Packages.org.dspace.eperson.EPerson);
 importClass(Packages.org.dspace.eperson.Group);
+importClass(Packages.org.dspace.app.util.Util);
+
+importClass(Packages.org.dspace.xmlworkflow.WorkflowFactory);
+importClass(Packages.java.util.Set);
 
 importClass(Packages.org.dspace.app.xmlui.utils.FlowscriptUtils);
 importClass(Packages.org.dspace.app.xmlui.utils.ContextUtil);
@@ -27,8 +31,10 @@ importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowItemUtils);
 importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowMapperUtils);
 importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowAuthorizationUtils);
 importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowContainerUtils);
+importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowCurationUtils);
 importClass(Packages.org.dspace.app.xmlui.aspect.administrative.FlowMetadataImportUtils);
 importClass(Packages.java.lang.System);
+importClass(Packages.org.dspace.core.ConfigurationManager);
 
 /**
  * Simple access method to access the current cocoon object model.
@@ -606,8 +612,19 @@ function startEditCommunity()
 	cocoon.exit();
 }
 
+/**
+ * Start (site-wide) curation of any object
+ */
+function startCurate()
+{
+        assertAdministrator();
 
+        doCurate();
 
+        cocoon.redirectTo(cocoon.request.getContextPath());
+        getDSContext().complete();
+        cocoon.exit();
+}
 
 
 
@@ -1398,7 +1415,8 @@ function doEditItem(itemID)
 		{
 			doViewItem(itemID);
 		}
-	        else if (cocoon.request.get("submit_curate"))  {
+	        else if (cocoon.request.get("submit_curate"))
+                {
                         doCurateItem(itemID, cocoon.request.get("curate_task"));
                 }
                 else
@@ -1495,6 +1513,7 @@ function doEditItemBitstreams(itemID)
 		assertEditItem(itemID);
 		result = null;
 
+        var submitButton = Util.getSubmitButton(cocoon.request, "submit_return");
 		if (cocoon.request.get("submit_return") || cocoon.request.get("submit_status") || cocoon.request.get("submit_bitstreams") || cocoon.request.get("submit_metadata") || cocoon.request.get("view_item") || cocoon.request.get("submit_curate"))
 		{
 			// go back to where ever we came from.
@@ -1521,6 +1540,9 @@ function doEditItemBitstreams(itemID)
 
 			result = doDeleteBitstreams(itemID,bitstreamIDs)
 		}
+        else if (submitButton.equals("submit_update_order") || submitButton.startsWith("submit_order_")){
+            result = FlowItemUtils.processReorderBitstream(getDSContext(), itemID, cocoon.request);
+        }
 	} while (true)
 }
 
@@ -1559,31 +1581,38 @@ function doEditItemMetadata(itemID, templateCollectionID)
 }
 
 
-  /** Curate
- *
- *
+/**
+ * Curate an Item
+ * Can only be performed by someone who is able to edit that Item.
  */
-        function doCurateItem(itemID, task) {
-            var result;
+function doCurateItem(itemID, task) 
+{
+    var result;
 
-            do {
-                           sendPageAndWait("admin/item/curateItem",{"itemID":itemID}, result);
-                           assertEditCommunity(itemID);
-                           result = null;
-                           if (!cocoon.request.get("submit_curate_task") && !cocoon.request.get("submit_queue_task"))
-                           {
-                                  return null;
-                           }
-                           else if (cocoon.request.get("submit_curate_task"))
-                           {
-                                   result = FlowItemUtils.processCurateItem(getDSContext(), itemID, cocoon.request);
-                           }
-                           else if (cocoon.request.get("submit_queue_task"))
-                           {
-                                   result = FlowItemUtils.processQueueItem(getDSContext(), itemID, cocoon.request);
-                           }
-            } while (true);
-        }
+    do {
+           if (cocoon.request.get("select_curate_group"))
+	   {
+                var select_curate_group = cocoon.request.getParameter("select_curate_group");
+                sendPageAndWait("admin/item/curateItem",{"itemID":itemID,"select_curate_group":select_curate_group}, result);
+	   } else {
+                sendPageAndWait("admin/item/curateItem",{"itemID":itemID}, result);
+           }
+           assertEditItem(itemID);
+           result = null;
+           if (!cocoon.request.get("submit_curate_task") && !cocoon.request.get("submit_queue_task") && !cocoon.request.get("select_curate_group"))
+           {
+                return null;
+           }
+           else if (cocoon.request.get("submit_curate_task"))
+           {
+                result = FlowItemUtils.processCurateItem(getDSContext(), itemID, cocoon.request);
+           }
+           else if (cocoon.request.get("submit_queue_task"))
+           {
+                result = FlowItemUtils.processQueueItem(getDSContext(), itemID, cocoon.request);
+           }
+    } while (true);
+}
 
 /**
  * Confirm the deletition of this item.
@@ -1745,8 +1774,9 @@ function doEditBitstream(itemID, bitstreamID)
             var description = cocoon.request.get("description");
             var formatID = cocoon.request.get("formatID");
             var userFormat = cocoon.request.get("user_format");
+            var bitstreamName = cocoon.request.get("bitstreamName");
 
-            result = FlowItemUtils.processEditBitstream(getDSContext(),itemID,bitstreamID,primary,description,formatID,userFormat);
+            result = FlowItemUtils.processEditBitstream(getDSContext(),itemID,bitstreamID,bitstreamName,primary,description,formatID,userFormat);
         }
     } while (result == null || ! result.getContinue())
 
@@ -2384,11 +2414,62 @@ function doEditCollectionMetadata(collectionID)
  * Returns to the EditCollection page and selected tab if this is a simple navigation,
  * not a submit.
  */
+function setXMLWorkflowRoles(workflow, collectionID, result) {
+    var roles = workflow.getRoles().keySet().toArray();
+    for (var i = 0; i < roles.length; i++) {
+        if (cocoon.request.get("submit_delete_wf_role_" + roles[i])) {
+            assertAdminCollection(collectionID);
+            result = doDeleteCollectionRole(collectionID, roles[i]);
+        }
+        if (cocoon.request.get("submit_edit_wf_role_" + roles[i])) {
+            assertEditCollection(collectionID);
+            var groupID = FlowContainerUtils.getCollectionRole(getDSContext(), collectionID, roles[i]);
+            result = doEditGroup(groupID);
+        }
+        if (cocoon.request.get("submit_create_wf_role_" + roles[i])) {
+            assertEditCollection(collectionID);
+            var groupID = FlowContainerUtils.getCollectionRole(getDSContext(), collectionID, roles[i]);
+            result = doEditGroup(groupID);
+        }
+    }
+    return result;
+}
+function setOriginalWorkflowRoles(collectionID, result) {
+    // WORKFLOW STEPS 1-3
+    if (cocoon.request.get("submit_edit_wf_step1") || cocoon.request.get("submit_create_wf_step1")) {
+        assertEditCollection(collectionID);
+        var groupID = FlowContainerUtils.getCollectionRole(getDSContext(), collectionID, "WF_STEP1");
+        result = doEditGroup(groupID);
+    }
+    else if (cocoon.request.get("submit_delete_wf_step1")) {
+        result = doDeleteCollectionRole(collectionID, "WF_STEP1");
+    }
+
+    else if (cocoon.request.get("submit_edit_wf_step2") || cocoon.request.get("submit_create_wf_step2")) {
+        assertEditCollection(collectionID);
+        var groupID = FlowContainerUtils.getCollectionRole(getDSContext(), collectionID, "WF_STEP2");
+        result = doEditGroup(groupID);
+    }
+    else if (cocoon.request.get("submit_delete_wf_step2")) {
+        result = doDeleteCollectionRole(collectionID, "WF_STEP2");
+    }
+
+    else if (cocoon.request.get("submit_edit_wf_step3") || cocoon.request.get("submit_create_wf_step3")) {
+        assertEditCollection(collectionID);
+        var groupID = FlowContainerUtils.getCollectionRole(getDSContext(), collectionID, "WF_STEP3");
+        result = doEditGroup(groupID);
+    }
+    else if (cocoon.request.get("submit_delete_wf_step3")) {
+        result = doDeleteCollectionRole(collectionID, "WF_STEP3");
+    }
+    return result;
+}
 function doAssignCollectionRoles(collectionID)
 {
 	assertEditCollection(collectionID);
 
 	var result;
+	var workflow = null;
 
 	do {
 		sendPageAndWait("admin/collection/assignRoles",{"collectionID":collectionID},result);
@@ -2400,6 +2481,7 @@ function doAssignCollectionRoles(collectionID)
 			cocoon.request.get("submit_roles") || cocoon.request.get("submit_harvesting") ||
                         cocoon.request.get("submit_curate"))
 		{
+			// return to the editCollection function which will determine where to go next.
 			return null;
 		}
 
@@ -2419,40 +2501,6 @@ function doAssignCollectionRoles(collectionID)
 		}
 		else if (cocoon.request.get("submit_delete_admin")) {
 			result = doDeleteCollectionRole(collectionID, "ADMIN");
-		}
-
-		// WORKFLOW STEPS 1-3
-		else if (cocoon.request.get("submit_edit_wf_step1") || cocoon.request.get("submit_create_wf_step1"))
-		{
-			assertEditCollection(collectionID);
-			var groupID = FlowContainerUtils.getCollectionRole(getDSContext(),collectionID, "WF_STEP1");
-			result = doEditGroup(groupID);
-		}
-		else if (cocoon.request.get("submit_delete_wf_step1"))
-		{
-			result = doDeleteCollectionRole(collectionID, "WF_STEP1");
-		}
-
-		else if (cocoon.request.get("submit_edit_wf_step2") || cocoon.request.get("submit_create_wf_step2"))
-		{
-			assertEditCollection(collectionID);
-			var groupID = FlowContainerUtils.getCollectionRole(getDSContext(),collectionID, "WF_STEP2");
-			result = doEditGroup(groupID);
-		}
-		else if (cocoon.request.get("submit_delete_wf_step2"))
-		{
-			result = doDeleteCollectionRole(collectionID, "WF_STEP2");
-		}
-
-		else if (cocoon.request.get("submit_edit_wf_step3") || cocoon.request.get("submit_create_wf_step3"))
-		{
-			assertEditCollection(collectionID);
-			var groupID = FlowContainerUtils.getCollectionRole(getDSContext(),collectionID, "WF_STEP3");
-			result = doEditGroup(groupID);
-		}
-		else if (cocoon.request.get("submit_delete_wf_step3"))
-		{
-			result = doDeleteCollectionRole(collectionID, "WF_STEP3");
 		}
 
 		// SUBMIT
@@ -2484,24 +2532,36 @@ function doAssignCollectionRoles(collectionID)
 		else if (cocoon.request.get("submit_delete_default_read"))
 		{
 			result = doDeleteCollectionRole(collectionID, "DEFAULT_READ");
-		}
+		}else{
+            if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
+                if(workflow == null){
+                    var collection = Collection.find(getDSContext(),collectionID);
+                    workflow = WorkflowFactory.getWorkflow(collection);
+                }
+                result = setXMLWorkflowRoles(workflow, collectionID, result);
+            }else{
+                result = setOriginalWorkflowRoles(collectionID, result);
+		    }
+        }
 
 	}while(true);
 }
 
 /**
- * Curate Collection
- *
- */
-/** Curate
- *
- *
+ * Curate a Collection
+ * Can only be performed by someone who is able to edit that collection.
  */
 function doCurateCollection(collectionID, task) {
     var result;
 
     do {
-		   sendPageAndWait("admin/collection/curateCollection",{"collectionID":collectionID},result);
+                   if (cocoon.request.get("select_curate_group"))
+                   {
+                      var select_curate_group = cocoon.request.getParameter("select_curate_group");
+                      sendPageAndWait("admin/collection/curateCollection",{"collectionID":collectionID,"select_curate_group":select_curate_group}, result);
+                   } else {
+                      sendPageAndWait("admin/collection/curateCollection",{"collectionID":collectionID}, result);
+                   } 
 		   assertEditCollection(collectionID);
 		   result = null;
 		   if (cocoon.request.get("submit_return") || cocoon.request.get("submit_metadata") ||
@@ -2887,6 +2947,7 @@ function doAssignCommunityRoles(communityID)
 
 		   if (cocoon.request.get("submit_return") || cocoon.request.get("submit_metadata") || cocoon.request.get("submit_roles") || cocoon.request.get("submit_curate") )
 		   {
+			   // return to the editCommunity function which will determine where to go next.
 			   return null;
 		   }
 		   else if (cocoon.request.get("submit_authorizations"))
@@ -2909,15 +2970,21 @@ function doAssignCommunityRoles(communityID)
     }while (true);
 }
 
-/** Curate
- *
- *
+/**
+ * Curate a Community
+ * Can only be performed by someone who is able to edit that Community.
  */
 function doCurateCommunity(communityID, task) {
     var result;
 
     do {
-		   sendPageAndWait("admin/community/curateCommunity",{"communityID":communityID},result);
+		   if (cocoon.request.get("select_curate_group"))
+                   {
+                      var select_curate_group = cocoon.request.getParameter("select_curate_group");
+                      sendPageAndWait("admin/community/curateCommunity",{"communityID":communityID,"select_curate_group":select_curate_group}, result);
+                   } else {
+                      sendPageAndWait("admin/community/curateCommunity",{"communityID":communityID}, result);
+           	   }
 		   assertEditCommunity(communityID);
 		   result = null;
 		   if (cocoon.request.get("submit_return") || cocoon.request.get("submit_metadata") || cocoon.request.get("submit_roles") || cocoon.request.get("submit_curate") )
@@ -2958,4 +3025,57 @@ function doDeleteCommunityRole(communityID,role)
 		return result;
 	}
 	return null;
+}
+
+/**
+ * Curate a DSpace Object, from site-wide Administrator tools
+ * (Can only be performed by a DSpace Administrator)
+ */
+function doCurate() 
+{
+    var result;
+    
+    assertAdministrator();
+
+    var identifier;
+    var curateTask;
+    do 
+    {
+        if (cocoon.request.get("select_curate_group"))
+        {
+            var select_curate_group = cocoon.request.getParameter("select_curate_group");
+            var identifier = cocoon.request.getParameter("identifier");
+            sendPageAndWait("admin/curate/main",{"identifier":identifier,"curate_task":curateTask, "select_curate_group":select_curate_group},result);
+        }
+        else
+        {
+             sendPageAndWait("admin/curate/main",{"identifier":identifier,"curate_task":curateTask},result);	   
+        } 
+       	   
+        if (cocoon.request.get("submit_curate_task"))
+        {
+            result = FlowCurationUtils.processCurateObject(getDSContext(), cocoon.request);
+        }
+        else if (cocoon.request.get("submit_queue_task"))
+        {
+            result = FlowCurationUtils.processQueueObject(getDSContext(), cocoon.request);
+        }
+        
+        //if 'identifier' parameter was set in result, pass it back to sendPageAndWait call (so it is prepopulated in Admin UI)
+        if (result != null && result.getParameter("identifier")) {
+            identifier = result.getParameter("identifier");
+        }
+        else if (!cocoon.request.get("select_curate_group")) {
+             identifier = null;
+         }
+       
+        //if 'curate_task' parameter was set in result, pass it back to sendPageAndWait call (so it is prepopulated in Admin UI)
+        if (result != null && result.getParameter("curate_task")) {
+            curateTask = result.getParameter("curate_task");
+        }
+        else if (!cocoon.request.get("select_curate_group")) {
+            curateTask = null;
+        }  
+    }
+    while (true);
 }

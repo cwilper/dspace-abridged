@@ -7,13 +7,13 @@
  */
 package org.dspace.app.xmlui.aspect.discovery;
 
+import org.apache.cocoon.caching.CacheableProcessingComponent;
 import org.apache.cocoon.environment.ObjectModelHelper;
+import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.util.HashUtil;
 import org.apache.excalibur.source.SourceValidity;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
+import org.dspace.app.xmlui.cocoon.AbstractDSpaceTransformer;
 import org.dspace.app.xmlui.utils.DSpaceValidity;
 import org.dspace.app.xmlui.utils.HandleUtil;
 import org.dspace.app.xmlui.utils.UIException;
@@ -26,6 +26,10 @@ import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.core.LogManager;
 import org.dspace.discovery.*;
+import org.dspace.discovery.configuration.DiscoveryConfiguration;
+import org.dspace.discovery.configuration.DiscoverySortConfiguration;
+import org.dspace.discovery.configuration.DiscoverySortFieldConfiguration;
+import org.dspace.handle.HandleManager;
 import org.dspace.sort.SortOption;
 import org.xml.sax.SAXException;
 
@@ -46,7 +50,7 @@ import java.util.List;
  * @author Mark Diggory (markd at atmire dot com)
  * @author Ben Bosman (ben at atmire dot com)
  */
-public abstract class AbstractSearch extends AbstractFiltersTransformer {
+public abstract class AbstractSearch extends AbstractDSpaceTransformer implements CacheableProcessingComponent{
 
     private static final Logger log = Logger.getLogger(AbstractSearch.class);
 
@@ -54,8 +58,6 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
     /**
      * Language strings
      */
-    private static final Message T_result_query =
-            message("xmlui.ArtifactBrowser.AbstractSearch.result_query");
 
     private static final Message T_head1_community =
             message("xmlui.ArtifactBrowser.AbstractSearch.head1_community");
@@ -85,6 +87,20 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
     private static final Message T_order_desc = message("xmlui.ArtifactBrowser.AbstractSearch.order.desc");
 
     private static final Message T_rpp = message("xmlui.ArtifactBrowser.AbstractSearch.rpp");
+
+
+    private static final Message T_sort_head = message("xmlui.Discovery.SimpleSearch.sort_head");
+    private static final Message T_sort_button = message("xmlui.Discovery.SimpleSearch.sort_apply");
+
+    /**
+     * Cached query results
+     */
+    protected DiscoverResult queryResults;
+
+    /**
+     * Cached query arguments
+     */
+    protected DiscoverQuery queryArgs;
 
     /**
      * The options for results per page
@@ -147,13 +163,24 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
 
                 performSearch(scope);
 
-                SolrDocumentList results = this.queryResults.getResults();
+                List<DSpaceObject> results = this.queryResults.getDspaceObjects();
 
                 if (results != null) {
+                    validity.add("total:"+this.queryResults.getTotalSearchResults());
+                    validity.add("start:"+this.queryResults.getStart());
                     validity.add("size:" + results.size());
 
-                    for (SolrDocument result : results) {
-                        validity.add(result.toString());
+                    for (DSpaceObject dso : results) {
+                        validity.add(dso);
+                    }
+                }
+
+                Map<String, List<DiscoverResult.FacetResult>> facetResults = this.queryResults.getFacetResults();
+                for(String facetField : facetResults.keySet()){
+                    List<DiscoverResult.FacetResult> facetValues = facetResults.get(facetField);
+                    for (DiscoverResult.FacetResult facetResult : facetValues)
+                    {
+                        validity.add(facetResult.getAsFilterQuery() + facetResult.getCount());
                     }
                 }
 
@@ -189,7 +216,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
             throws IOException, SQLException, WingException, SearchServiceException {
 
         try {
-            if (queryResults == null || queryResults.getResults() == null) {
+            if (queryResults == null) {
 
                 DSpaceObject scope = getScope();
                 this.performSearch(scope);
@@ -202,11 +229,6 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         catch (Exception e) {
             log.error(e.getMessage(), e);
             queryResults = null;
-        }
-
-        if (queryResults != null) {
-            search.addPara("result-query", "result-query")
-                    .addContent(T_result_query.parameterize(getQuery(), queryResults.getResults().getNumFound()));
         }
 
         Division results = search.addDivision("search-results", "primary");
@@ -225,20 +247,18 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
             results.setHead(T_head1_none);
         }
 
-        if (queryResults != null &&
-                queryResults.getResults().getNumFound() > 0) {
-
-            SolrDocumentList solrResults = queryResults.getResults();
+        if (queryResults != null && 0< queryResults.getDspaceObjects().size())
+        {
 
             // Pagination variables.
-            int itemsTotal = (int) solrResults.getNumFound();
-            int firstItemIndex = (int) solrResults.getStart() + 1;
-            int lastItemIndex = (int) solrResults.getStart() + solrResults.size();
+            int itemsTotal = (int) queryResults.getTotalSearchResults();
+            int firstItemIndex = (int) this.queryResults.getStart() + 1;
+            int lastItemIndex = (int) this.queryResults.getStart() + queryResults.getDspaceObjects().size();
 
             //if (itemsTotal < lastItemIndex)
             //    lastItemIndex = itemsTotal;
-            int currentPage = (int) (solrResults.getStart() / this.queryArgs.getRows()) + 1;
-            int pagesTotal = (int) ((solrResults.getNumFound() - 1) / this.queryArgs.getRows()) + 1;
+            int currentPage = this.queryResults.getStart() / this.queryResults.getMaxResults() + 1;
+            int pagesTotal = (int) ((this.queryResults.getTotalSearchResults() - 1) / this.queryResults.getMaxResults()) + 1;
             Map<String, String> parameters = new HashMap<String, String>();
             parameters.put("page", "{pageNum}");
             String pageURLMask = generateURL(parameters);
@@ -259,20 +279,18 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
             // Look for any communities or collections in the mix
             ReferenceSet referenceSet = null;
 
-            for (SolrDocument doc : solrResults) {
-
-                DSpaceObject resultDSO =
-                        SearchUtils.findDSpaceObject(context, doc);
-
-                if (resultDSO instanceof Community
-                        || resultDSO instanceof Collection) {
+            for (DSpaceObject resultDso : queryResults.getDspaceObjects())
+            {
+                    if (resultDso instanceof Community || resultDso instanceof Collection) {
                     if (referenceSet == null) {
                         referenceSet = results.addReferenceSet("search-results-repository",
                                 ReferenceSet.TYPE_SUMMARY_LIST, null, "repository-search-results");
                         // Set a heading showing that we will be listing containers that matched:
                         referenceSet.setHead(T_head2);
                     }
-                    referenceSet.addReference(resultDSO);
+                    if(resultDso != null){
+                        referenceSet.addReference(resultDso);
+                    }
                 }
             }
 
@@ -282,12 +300,11 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
                     ReferenceSet.TYPE_SUMMARY_LIST, null, "repository-search-results");
 
 
-            for (SolrDocument doc : solrResults) {
-
-                DSpaceObject resultDSO = SearchUtils.findDSpaceObject(context, doc);
-
-                if (resultDSO instanceof Item) {
-                    referenceSet.addReference(resultDSO);
+            for (DSpaceObject resultDso : queryResults.getDspaceObjects())
+            {
+                if (resultDso instanceof Item)
+                {
+                    referenceSet.addReference(resultDso);
                 }
             }
 
@@ -354,7 +371,8 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
      * Query DSpace for a list of all items / collections / or communities that
      * match the given search query.
      *
-     * @return The associated query results.
+     *
+     * @param scope the dspace object parent
      */
     public void performSearch(DSpaceObject scope) throws UIException, SearchServiceException {
 
@@ -372,14 +390,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
 
         List<String> filterQueries = new ArrayList<String>();
 
-        if (scope instanceof Community) {
-            filterQueries.add("location:m" + scope.getID());
-
-        } else if (scope instanceof Collection) {
-            filterQueries.add("location:l" + scope.getID());
-        }
-
-        String[] fqs = getSolrFilterQueries();
+        String[] fqs = getFilterQueries();
 
         if (fqs != null)
         {
@@ -387,36 +398,45 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         }
 
 
-        queryArgs = this.prepareDefaultFilters("search", filterQueries.toArray(new String[filterQueries.size()]));
+        this.queryArgs = new DiscoverQuery();
+
+        //Add the configured default filter queries
+        DiscoveryConfiguration discoveryConfiguration = SearchUtils.getDiscoveryConfiguration(scope);
+        List<String> defaultFilterQueries = discoveryConfiguration.getDefaultFilterQueries();
+        queryArgs.addFilterQueries(defaultFilterQueries.toArray(new String[defaultFilterQueries.size()]));
 
         if (filterQueries.size() > 0) {
-            queryArgs.addFilterQuery(filterQueries.toArray(new String[filterQueries.size()]));
+            queryArgs.addFilterQueries(filterQueries.toArray(new String[filterQueries.size()]));
         }
 
 
-        queryArgs.setRows(getParameterRpp());
+        queryArgs.setMaxResults(getParameterRpp());
 
         String sortBy = ObjectModelHelper.getRequest(objectModel).getParameter("sort_by");
-
+        DiscoverySortConfiguration searchSortConfiguration = discoveryConfiguration.getSearchSortConfiguration();
+        if(sortBy == null){
+            //Attempt to find the default one, if none found we use SCORE
+            sortBy = "score";
+            if(searchSortConfiguration != null){
+                for (DiscoverySortFieldConfiguration sortFieldConfiguration : searchSortConfiguration.getSortFields()) {
+                    if(sortFieldConfiguration.equals(searchSortConfiguration.getDefaultSort())){
+                        sortBy = SearchUtils.getSearchService().toSortFieldIndex(sortFieldConfiguration.getMetadataField(), sortFieldConfiguration.getType());
+                    }
+                }
+            }
+        }
         String sortOrder = ObjectModelHelper.getRequest(objectModel).getParameter("order");
+        if(sortOrder == null && searchSortConfiguration != null){
+            sortOrder = searchSortConfiguration.getDefaultSortOrder().toString();
+        }
 
-
-        //webui.itemlist.sort-option.1 = title:dc.title:title
-        //webui.itemlist.sort-option.2 = dateissued:dc.date.issued:date
-        //webui.itemlist.sort-option.3 = dateaccessioned:dc.date.accessioned:date
-        //webui.itemlist.sort-option.4 = ispartof:dc.relation.ispartof:text
-
-        if (sortBy != null) {
-            if (sortOrder == null || sortOrder.equals("DESC"))
-            {
-                queryArgs.addSortField(sortBy, SolrQuery.ORDER.desc);
-            }
-            else
-            {
-                queryArgs.addSortField(sortBy, SolrQuery.ORDER.asc);
-            }
-        } else {
-            queryArgs.addSortField("score", SolrQuery.ORDER.asc);
+        if (sortOrder == null || sortOrder.equalsIgnoreCase("DESC"))
+        {
+            queryArgs.setSortField(sortBy, DiscoverQuery.SORT_ORDER.desc);
+        }
+        else
+        {
+            queryArgs.setSortField(sortBy, DiscoverQuery.SORT_ORDER.asc);
         }
 
 
@@ -426,26 +446,26 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         // Enable groupBy collapsing if designated
         if (groupBy != null && !groupBy.equalsIgnoreCase("none")) {
             /** Construct a Collapse Field Query */
-            queryArgs.add("collapse.field", groupBy);
-            queryArgs.add("collapse.threshold", "1");
-            queryArgs.add("collapse.includeCollapsedDocs.fl", "handle");
-            queryArgs.add("collapse.facet", "before");
+            queryArgs.addProperty("collapse.field", groupBy);
+            queryArgs.addProperty("collapse.threshold", "1");
+            queryArgs.addProperty("collapse.includeCollapsedDocs.fl", "handle");
+            queryArgs.addProperty("collapse.facet", "before");
 
             //queryArgs.a  type:Article^2
 
             // TODO: This is a hack to get Publications (Articles) to always be at the top of Groups.
             // TODO: I think the can be more transparently done in the solr solrconfig.xml with DISMAX and boosting
             /** sort in groups to get publications to top */
-            queryArgs.addSortField("dc.type", SolrQuery.ORDER.asc);
+            queryArgs.setSortField("dc.type", DiscoverQuery.SORT_ORDER.asc);
 
         }
 
 
-        queryArgs.setQuery(query != null && !query.trim().equals("") ? query : "*:*");
+        queryArgs.setQuery(query != null && !query.trim().equals("") ? query : null);
 
         if (page > 1)
         {
-            queryArgs.setStart((page - 1) * queryArgs.getRows());
+            queryArgs.setStart((page - 1) * queryArgs.getMaxResults());
         }
         else
         {
@@ -507,7 +527,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         }
         */
         
-        this.queryResults = getSearchService().search(queryArgs);
+        this.queryResults = SearchUtils.getSearchService().search(context, scope, queryArgs);
     }
 
 
@@ -530,7 +550,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
      *  This method returns more expanded filter queries then the getParameterFilterQueries
      * @return an array containing the filter queries
      */
-    protected String[] getSolrFilterQueries() {
+    protected String[] getFilterQueries() {
         try {
             return ObjectModelHelper.getRequest(objectModel).getParameterValues("fq");
         }
@@ -568,7 +588,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
 
     protected String getParameterSortBy() {
         String s = ObjectModelHelper.getRequest(objectModel).getParameter("sort_by");
-        return s != null ? s : "score";
+        return s != null ? s : null;
     }
 
     protected String getParameterGroup() {
@@ -577,8 +597,11 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
     }
 
     protected String getParameterOrder() {
-        String s = ObjectModelHelper.getRequest(objectModel).getParameter("order");
-        return s != null ? s : "DESC";
+        return ObjectModelHelper.getRequest(objectModel).getParameter("order");
+    }
+
+    protected String getParameterScope() {
+        return ObjectModelHelper.getRequest(objectModel).getParameter("scope");
     }
 
     protected int getParameterEtAl() {
@@ -626,26 +649,26 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
      * Recycle
      */
     public void recycle() {
+        this.queryArgs = null;
+        this.queryResults = null;
         this.validity = null;
         super.recycle();
     }
 
 
     protected void buildSearchControls(Division div)
-            throws WingException {
+            throws WingException, SQLException {
 
-        
+        org.dspace.app.xmlui.wing.element.List controlsList = div.addList("search-controls", org.dspace.app.xmlui.wing.element.List.TYPE_FORM);
 
 
-
-        Table controlsTable = div.addTable("search-controls", 1, 3);
+        controlsList.setHead(T_sort_head);
         //Table controlsTable = div.addTable("search-controls", 1, 4);
-        Row controlsRow = controlsTable.addRow(Row.ROLE_DATA);
 
+        org.dspace.app.xmlui.wing.element.Item controlsItem = controlsList.addItem();
         // Create a control for the number of records to display
-        Cell rppCell = controlsRow.addCell();
-        rppCell.addContent(T_rpp);
-        Select rppSelect = rppCell.addSelect("rpp");
+        controlsItem.addContent(T_rpp);
+        Select rppSelect = controlsItem.addSelect("rpp");
         for (int i : RESULTS_PER_PAGE_PROGRESSION) {
             rppSelect.addOption((i == getParameterRpp()), i, Integer.toString(i));
         }
@@ -671,24 +694,37 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         }
         */
         
-        Cell sortCell = controlsRow.addCell();
         // Create a drop down of the different sort columns available
-        sortCell.addContent(T_sort_by);
-        Select sortSelect = sortCell.addSelect("sort_by");
+        controlsItem.addContent(T_sort_by);
+        Select sortSelect = controlsItem.addSelect("sort_by");
         sortSelect.addOption(false, "score", T_sort_by_relevance);
-        for (String sortField : SearchUtils.getSortFields()) {
-            sortField += "_sort";
-            sortSelect.addOption((sortField.equals(getParameterSortBy())), sortField,
-                    message("xmlui.ArtifactBrowser.AbstractSearch.sort_by." + sortField));
+
+        DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
+        DiscoveryConfiguration discoveryConfiguration = SearchUtils.getDiscoveryConfiguration(dso);
+
+        DiscoverySortConfiguration searchSortConfiguration = discoveryConfiguration.getSearchSortConfiguration();
+        if(searchSortConfiguration != null){
+            for (DiscoverySortFieldConfiguration sortFieldConfiguration : searchSortConfiguration.getSortFields()) {
+                String sortField = SearchUtils.getSearchService().toSortFieldIndex(sortFieldConfiguration.getMetadataField(), sortFieldConfiguration.getType());
+
+                String currentSort = getParameterSortBy();
+                sortSelect.addOption((sortField.equals(currentSort) || sortFieldConfiguration.equals(searchSortConfiguration.getDefaultSort())), sortField,
+                        message("xmlui.ArtifactBrowser.AbstractSearch.sort_by." + sortField));
+            }
         }
 
         // Create a control to changing ascending / descending order
-        Cell orderCell = controlsRow.addCell();
-        orderCell.addContent(T_order);
-        Select orderSelect = orderCell.addSelect("order");
-        orderSelect.addOption(SortOption.ASCENDING.equals(getParameterOrder()), SortOption.ASCENDING, T_order_asc);
-        orderSelect.addOption(SortOption.DESCENDING.equals(getParameterOrder()), SortOption.DESCENDING, T_order_desc);
+        controlsItem.addContent(T_order);
+        Select orderSelect = controlsItem.addSelect("order");
 
+        String parameterOrder = getParameterOrder();
+        if(parameterOrder == null && searchSortConfiguration != null) {
+            parameterOrder = searchSortConfiguration.getDefaultSortOrder().toString();
+        }
+        orderSelect.addOption(SortOption.ASCENDING.equalsIgnoreCase(parameterOrder), SortOption.ASCENDING, T_order_asc);
+        orderSelect.addOption(SortOption.DESCENDING.equalsIgnoreCase(parameterOrder), SortOption.DESCENDING, T_order_desc);
+
+        controlsItem.addButton("submit_sort").setValue(T_sort_button);
 
         // Create a control for the number of authors per item to display
         // FIXME This is currently disabled, as the supporting functionality
@@ -706,6 +742,33 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         //        etalSelect.addOption(i == info.getEtAl(), i, Integer.toString(i));
         //    }
         //}
+    }
+
+    /**
+     * Determine the current scope. This may be derived from the current url
+     * handle if present or the scope parameter is given. If no scope is
+     * specified then null is returned.
+     *
+     * @return The current scope.
+     */
+    protected DSpaceObject getScope() throws SQLException {
+        Request request = ObjectModelHelper.getRequest(objectModel);
+        String scopeString = request.getParameter("scope");
+
+        // Are we in a community or collection?
+        DSpaceObject dso;
+        if (scopeString == null || "".equals(scopeString))
+        {
+            // get the search scope from the url handle
+            dso = HandleUtil.obtainHandle(objectModel);
+        }
+        else
+        {
+            // Get the search scope from the location parameter
+            dso = HandleManager.resolveToObject(context, scopeString);
+        }
+
+        return dso;
     }
 
     protected void logSearch() {
@@ -748,7 +811,7 @@ public abstract class AbstractSearch extends AbstractFiltersTransformer {
         }
 
         log.info(LogManager.getHeader(context, "search", logInfo + "query=\""
-                + queryArgs.getQuery() + "\",results=(" + countCommunities + ","
+                + (queryArgs == null ? "" : queryArgs.getQuery()) + "\",results=(" + countCommunities + ","
                 + countCollections + "," + countItems + ")"));
     }
 }
