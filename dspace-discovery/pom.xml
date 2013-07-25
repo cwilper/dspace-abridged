@@ -5,14 +5,20 @@
     <packaging>pom</packaging>
     <groupId>org.dspace</groupId>
     <artifactId>discovery-modules</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
     <name>DSpace Discovery :: Modules</name>
 
     <parent>
         <artifactId>dspace-parent</artifactId>
         <groupId>org.dspace</groupId>
-        <version>1.7.2</version>
+        <version>1.7.3</version>
+		<relativePath>..</relativePath>
     </parent>
+
+    <properties>
+        <!-- This is the path to the root [dspace-src] directory. -->
+        <root.basedir>${basedir}/..</root.basedir>
+    </properties>
     
     <modules>
         <module>dspace-discovery-provider</module>
@@ -45,19 +51,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <!--
-       The Subversion repository location is used by Continuum to update
-       against when changes have occured, this spawns a new build cycle
-       and releases snapshots into the snapshot repository below.
-    -->
-    <scm>
-        <connection>scm:svn:http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</connection>
-        <developerConnection>
-            scm:svn:https://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2
-        </developerConnection>
-        <url>http://scm.dspace.org/svn/repo/dspace/tags/dspace-1.7.2</url>
-    </scm>
 
     <issueManagement>
       <system>JIRA</system>
