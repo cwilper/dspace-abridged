@@ -1,0 +1,3 @@
+DSpace 1.5.2 Release
+
+https://github.com/DSpace/DSpace/commit/4068fe0ce0604bb0648c2e326b0bc17480f6bf58

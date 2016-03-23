@@ -1,0 +1,3 @@
+DSpace 1.7.3 Release
+
+https://github.com/DSpace/DSpace/commit/96184cad90d3d9203e0c7ad2dfc5845038fea7b7

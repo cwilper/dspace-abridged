@@ -1,0 +1,3 @@
+DSpace 3.0 Source
+
+https://github.com/DSpace/DSpace/commit/b05e67a50d14e3eeffaf5297e1812b24c0f04dd6

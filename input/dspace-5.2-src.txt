@@ -1,0 +1,3 @@
+DSpace 5.2 Source
+
+https://github.com/DSpace/DSpace/commit/4a8fdf6843c8dcb7a02d986a09d98a3ef587160a

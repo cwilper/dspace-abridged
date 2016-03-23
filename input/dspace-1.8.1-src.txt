@@ -1,0 +1,3 @@
+DSpace 1.8.1 Source
+
+https://github.com/DSpace/DSpace/commit/b487f39fc23c8b5b44ddfd9e5a2bc4a2905c959b

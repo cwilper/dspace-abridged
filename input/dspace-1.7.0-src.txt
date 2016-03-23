@@ -1,0 +1,3 @@
+DSpace 1.7.0 Source
+
+https://github.com/DSpace/DSpace/commit/817c9abfb3f3ffacddf62e225591dd5e5348841a
